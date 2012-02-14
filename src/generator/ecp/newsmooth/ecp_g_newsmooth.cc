@@ -886,6 +886,47 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
 
     if (finish == true)
     {
+        std::ofstream outfile("../../src/application/generator_tester/optimized.trj", std::ios::out);
+        outfile << "JOINT\n";
+        outfile << ((int) pose_vector.size()) << "\n";
+        if (motion_type == lib::ABSOLUTE)
+        {
+            outfile << "ABSOLUTE\n\n";
+        }
+        else if (motion_type == lib::RELATIVE)
+        {
+            outfile << "RELATIVE\n\n";
+        }
+
+        pose_vector_iterator = pose_vector.begin();
+
+        for (i = 0; i < pose_vector.size(); i++)
+        {
+            for (j = 0; j < axes_num; j++)
+            {
+                outfile << pose_vector_iterator->v[j] << "\t";
+            }
+
+            outfile << "\n";
+
+            for (j = 0; j < axes_num; j++)
+            {
+                outfile << pose_vector_iterator->a[j] << "\t";
+            }
+
+            outfile << "\n";
+
+            for (j = 0; j < axes_num; j++)
+            {
+                outfile << pose_vector_iterator->coordinates[j] << "\t";
+            }
+
+            outfile << "\n";
+            outfile << "\n";
+
+            pose_vector_iterator++;
+        }
+
         //tutaj powinien byc save zoptymalizowanej trajektorii do pliku
         sr_ecp_msg.message("Optimized!");
     }

@@ -29,51 +29,51 @@ spline_gen_test::spline_gen_test(task::task & _ecp_t) :
             spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_JOINT, 6);
             spgenjoint->set_debug(true);
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_MOTOR, 6);
+            spgenmotor = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_MOTOR, 6);
             spgenmotor->set_debug(true);
 
             track = false;
             postument = true;
             conv = false;
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_EULER_ZYZ, 6);
+            spgeneuler = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_EULER_ZYZ, 6);
             spgeneuler->set_debug(true);
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 6);
+            spgenangle = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 6);
             spgenangle->set_debug(true);
 
     } else if (_ecp_t.ecp_m_robot->robot_name == lib::irp6ot_m::ROBOT_NAME) {
             spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_JOINT, 7);
             spgenjoint->set_debug(true);
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_MOTOR, 7);
+            spgenmotor = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_MOTOR, 7);
             spgenmotor->set_debug(true);
 
             track = true;
             postument = false;
             conv = false;
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_EULER_ZYZ, 6);
+            spgeneuler = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_EULER_ZYZ, 6);
             spgeneuler->set_debug(true);
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 6);
+            spgenangle = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 6);
             spgenangle->set_debug(true);
 
     } else if (_ecp_t.ecp_m_robot->robot_name == lib::conveyor::ROBOT_NAME) {
             spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_JOINT, 1);
             spgenjoint->set_debug(true);
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_MOTOR, 1);
+            spgenmotor = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_MOTOR, 1);
             spgenmotor->set_debug(true);
 
             track = false;
             postument = false;
             conv = true;
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_EULER_ZYZ, 1);
+            spgeneuler = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_EULER_ZYZ, 1);
             spgeneuler->set_debug(true);
 
-            spgenjoint = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 1);
+            spgenangle = (boost::shared_ptr <spline>) new spline(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 1);
             spgenangle->set_debug(true);
 
     }

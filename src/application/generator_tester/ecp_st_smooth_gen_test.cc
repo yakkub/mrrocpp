@@ -127,8 +127,10 @@ void smooth_gen_test::conditional_execution()
 
                 while (!sgenjoint->optimize_energy_cost(max_current_change, max_velocity, max_acceleration)) {
                         sr_ecp_msg.message("Optimizing...");
-                        sgenjoint->calculate_interpolate();
-                        sgenjoint->Move();
+                        if (sgenjoint->calculate_interpolate())
+                        {
+                            sgenjoint->Move();
+                        }
                 }
         }
 
