@@ -127,6 +127,10 @@ protected:
 	 * Energy cost during consecutive optimization iterations.
 	 */
 	std::vector <double> energy_cost;
+        /**
+          * Stores the path to last loaded trajectory file.
+          */
+        std::string last_loaded_file_path;
 
 	//--------- VELOCITY AND ACCELERATION VECTORS ---------
 	/**
@@ -330,6 +334,7 @@ public:
 		motion_type = lib::ABSOLUTE;
 		nmc = 10;
 		mc = nmc * lib::EDP_STEP;
+                last_loaded_file_path = "";
 
 	}
 	/**
@@ -635,7 +640,7 @@ public:
 		}
 
 		if (debug) {
-			print_pose_vector();
+                    //print_pose_vector();
 		}
 
 		interpolated = interpolate();
@@ -676,10 +681,11 @@ public:
 		coordinate_vector.clear();
 		if (!optimization) {
 			current_vector.clear();
-			energy_vector.clear();
-			pose_vector.clear();
-			energy_cost.clear();
+                        energy_vector.clear();
+                        energy_cost.clear();
+                        pose_vector.clear();
 		}
+
 		calculated = false;
 		interpolated = false;
 		angle_axis_absolute_transformed_into_relative = false;

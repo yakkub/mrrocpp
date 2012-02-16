@@ -469,6 +469,8 @@ bool newsmooth::load_trajectory_from_file(const char* file_name)
 
 	sr_ecp_msg.message(file_name);
 
+        last_loaded_file_path = file_name;
+
 	char coordinate_type_desc[80]; //description of pose specification read from the file
 	char motion_type_desc[80]; //description of motion type read from the file
 	lib::ECP_POSE_SPECIFICATION ps; //pose specification read from the file
@@ -756,8 +758,8 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
                     max_current_change_exceeded = true;
                 }
 
-                printf("control v: %f\n", control[j] * 0.00006);
-                printf("control a: %f\n", control[j] * 0.00004);
+                //printf("control v: %f\n", control[j] * 0.00006);
+                //printf("control a: %f\n", control[j] * 0.00004);
 
                 pose_vector_iterator->v[j] += control[j] * 0.00006;
                 pose_vector_iterator->a[j] += control[j] * 0.00004;
@@ -839,7 +841,9 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
         current_macrostep_in_pose++;
     }
 
-    double energySum;
+    double energySum = 0;
+
+    printf("energy vector size: %d\n", energy_vector.size());
 
     energy_vector_iterator = energy_vector.begin();
 
@@ -850,6 +854,15 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
             energySum += (*energy_vector_iterator)[j];
         }
         energy_vector_iterator++;
+    }
+
+    if (debug)
+    {
+        if (energy_cost.size() == 0)
+        {
+            std::ofstream rmDataFile(last_loaded_file_path + "-optimizedData", std::ios::out);
+            rmDataFile << "";
+        }
     }
 
     energy_cost.push_back(energySum);
@@ -881,14 +894,65 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
 
     if (debug)
     {
+        pose_vector_iterator = pose_vector.begin();
+
         printf ("########### Energy consumption: %f \n", energySum);
+
+        if (last_loaded_file_path == "")
+        {
+            last_loaded_file_path = "../../src/application/generator_tester/trajectory.trj";
+        }
+
+        std::ofstream outDataFile(last_loaded_file_path + "-optimizedData", std::ios::app);
+        outDataFile << energySum << ";";
+
+        for (j = 0; j < pose_vector.size(); j++)
+        {
+            //printf("\n%d:\n", j);
+            //printf("v:\t");
+            for (i = 0; i < axes_num; i++)
+            {
+               //printf("%f\t", pose_vector_iterator->v[i]);
+               outDataFile << pose_vector_iterator->v[i] << ";";
+            }
+            //printf("\n");
+            //printf("a:\t");
+            for (i = 0; i < axes_num; i++)
+            {
+                //printf("%f\t", pose_vector_iterator->a[i]);
+                outDataFile << pose_vector_iterator->a[i] << ";";
+            }
+            //printf("\n");
+            flushall();
+            pose_vector_iterator++;
+        }
+        outDataFile << "\n";
     }
 
     if (finish == true)
     {
-        std::ofstream outfile("../../src/application/generator_tester/optimized.trj", std::ios::out);
-        outfile << "JOINT\n";
+        if (last_loaded_file_path == "")
+        {
+            last_loaded_file_path = "../../src/application/generator_tester/trajectory.trj";
+        }
+
+        std::ofstream outfile(last_loaded_file_path + "-optimized", std::ios::out);
+
+        if (pose_spec == lib::ECP_JOINT)
+        {
+            outfile << "JOINT\n";
+        }
+        else if (pose_spec == lib::ECP_MOTOR)
+        {
+            outfile << "MOTOR\n";
+        }
+        else
+        {
+            outfile << "\n";
+        }
+
         outfile << ((int) pose_vector.size()) << "\n";
+
         if (motion_type == lib::ABSOLUTE)
         {
             outfile << "ABSOLUTE\n\n";
@@ -927,7 +991,6 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
             pose_vector_iterator++;
         }
 
-        //tutaj powinien byc save zoptymalizowanej trajektorii do pliku
         sr_ecp_msg.message("Optimized!");
     }
 

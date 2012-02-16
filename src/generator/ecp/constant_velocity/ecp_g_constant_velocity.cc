@@ -296,6 +296,8 @@ bool constant_velocity::load_trajectory_from_file(const char* file_name)
 
 	sr_ecp_msg.message(file_name);
 
+        last_loaded_file_path = file_name;
+
 	char coordinate_type_desc[80]; //description of pose specification read from the file
 	char motion_type_desc[80]; //description of motion type read from the file
 	lib::ECP_POSE_SPECIFICATION ps; //pose specification read from the file

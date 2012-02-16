@@ -110,20 +110,20 @@ void smooth_gen_test::conditional_execution()
                 max_current_change[5] = 800;
 
                 std::vector <double> max_velocity = std::vector <double>(6);
-                max_velocity[0] = 0.5;
-                max_velocity[1] = 0.5;
-                max_velocity[2] = 0.5;
-                max_velocity[3] = 0.5;
-                max_velocity[4] = 0.5;
-                max_velocity[5] = 0.5;
+                max_velocity[0] = 0.7;
+                max_velocity[1] = 0.7;
+                max_velocity[2] = 0.7;
+                max_velocity[3] = 0.7;
+                max_velocity[4] = 0.7;
+                max_velocity[5] = 0.7;
 
                 std::vector <double> max_acceleration = std::vector <double>(6);
-                max_acceleration[0] = 0.15;
-                max_acceleration[1] = 0.15;
-                max_acceleration[2] = 0.15;
-                max_acceleration[3] = 0.15;
-                max_acceleration[4] = 0.15;
-                max_acceleration[5] = 0.15;
+                max_acceleration[0] = 0.2;
+                max_acceleration[1] = 0.2;
+                max_acceleration[2] = 0.2;
+                max_acceleration[3] = 0.2;
+                max_acceleration[4] = 0.2;
+                max_acceleration[5] = 0.2;
 
                 while (!sgenjoint->optimize_energy_cost(max_current_change, max_velocity, max_acceleration)) {
                         sr_ecp_msg.message("Optimizing...");
