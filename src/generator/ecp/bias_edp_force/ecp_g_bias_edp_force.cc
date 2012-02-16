@@ -6,17 +6,6 @@
  * @ingroup generators
  */
 
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <ctime>
-#include <unistd.h>
-#include <cmath>
-#include <iostream>
-
-#include "base/lib/typedefs.h"
-
-#include "base/lib/sr/sr_ecp.h"
 #include "base/ecp/ecp_robot.h"
 #include "ecp_g_bias_edp_force.h"
 
