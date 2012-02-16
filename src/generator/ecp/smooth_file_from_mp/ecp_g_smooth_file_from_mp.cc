@@ -1,11 +1,5 @@
-#include "base/lib/typedefs.h"
-#include "base/lib/impconst.h"
-#include "base/lib/com_buf.h"
-
+#include "base/ecp/ecp_robot.h"
 #include "ecp_g_smooth_file_from_mp.h"
-#include "generator/ecp/newsmooth/ecp_g_newsmooth.h"
-
-#include "base/ecp/ecp_task.h"
 
 namespace mrrocpp {
 namespace ecp {
@@ -19,7 +13,8 @@ smooth_file_from_mp::smooth_file_from_mp(task::task & _ecp_t, lib::ECP_POSE_SPEC
 	switch (pose_spec)
 	{
 		case lib::ECP_JOINT:
-                        sgen = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, pose_spec, ecp_t.ecp_m_robot->number_of_servos);
+			sgen =
+					(boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, pose_spec, ecp_t.ecp_m_robot->number_of_servos);
 			sgen->set_debug(true);
 			break;
 		case lib::ECP_XYZ_ANGLE_AXIS:
