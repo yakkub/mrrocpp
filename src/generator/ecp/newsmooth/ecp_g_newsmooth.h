@@ -69,6 +69,10 @@ ecp::common::generator::velocity_profile_calculator::bang_bang_profile> {
 		 * Destructor.
 		 */
 		virtual ~newsmooth();
+//                *
+//                 * Moves manipulator to the position from which optimized trajectory is started.
+//
+                //void move_to_start_position();
 		/**
 		 * Loads a single trajectory pose described in joint coordinates (absolute motion) to the list. Maximal velocities and accelerations are set automatically.
 		 * @param coordinates desired position

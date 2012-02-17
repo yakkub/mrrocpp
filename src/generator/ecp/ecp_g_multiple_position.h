@@ -128,9 +128,13 @@ protected:
 	 */
 	std::vector <double> energy_cost;
         /**
-          * Stores the path to last loaded trajectory file.
-          */
+         * Stores the path to last loaded trajectory file.
+         */
         std::string last_loaded_file_path;
+        /**
+         * Position from which the optimized trajectory is started.
+         */
+        std::vector<double> optimization_start_position;
 
 	//--------- VELOCITY AND ACCELERATION VECTORS ---------
 	/**

@@ -35,6 +35,33 @@ newsmooth::~newsmooth()
 
 }
 
+//void newsmooth::move_to_start_position()
+//{
+//    if (!optimization)
+//    {
+//        return;
+//    }
+//
+//    if (optimization_start_position.size() == 0)
+//    {
+//        sr_ecp_msg.message("Optimization start position not defined");
+//        return;
+//    }
+//
+//    boost::shared_ptr <newsmooth> sgen;
+//
+//    if (pose_spec == lib::ECP_JOINT)
+//    {
+//        sgen = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, axes_num);
+//        sgen->set_debug(true);
+//    }
+//    else if (pose_spec == lib::ECP_MOTOR)
+//    {
+//        sgen = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_MOTOR, axes_num);
+//        sgen->set_debug(true);
+//    }
+//}
+
 bool newsmooth::calculate()
 {
 	//printf("\n################################## Calculate #################################\n");
@@ -745,7 +772,7 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
 
     for (i = 0; i < current_vector.size() - 1; i++)
     {
-        if (current_macrostep_in_pose == pose_vector_iterator->interpolation_node_no)
+        if (current_macrostep_in_pose == pose_vector_iterator->interpolation_node_no-1)
         {
             for (j = 0; j < axes_num; j++)
             {

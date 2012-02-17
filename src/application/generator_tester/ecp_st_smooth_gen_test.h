@@ -20,6 +20,9 @@ private:
         boost::shared_ptr <newsmooth> sgeneuler;
         boost::shared_ptr <newsmooth> sgenangle;
 
+        //for optimization
+        boost::shared_ptr <newsmooth> sgenstart;
+
 	bool track;
 	bool postument;
 	bool conv;

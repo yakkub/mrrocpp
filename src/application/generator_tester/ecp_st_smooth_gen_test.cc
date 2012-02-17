@@ -76,6 +76,8 @@ smooth_gen_test::smooth_gen_test(task::task & _ecp_t) :
 
         }
 
+        //for optimization
+        sgenstart = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, 6);
         network_path = std::string(_ecp_t.mrrocpp_network_path);
 }
 
@@ -97,6 +99,18 @@ void smooth_gen_test::conditional_execution()
         //network_path = std::string(ecp_t.mrrocpp_network_path);
 
         sgenjoint->set_optimization(true);
+
+        std::vector <double> startPos = std::vector <double>(6);
+        startPos[0] = -0.101;
+        startPos[1] = -1.542;
+        startPos[2] = 0.020;
+        startPos[3] = 1.134;
+        startPos[4] = 3.697;
+        startPos[5] = -2.738;
+
+        sgenstart->load_absolute_joint_trajectory_pose(startPos);
+        sgenstart->calculate_interpolate();
+        sgenstart->Move();
 
         if (sgenjoint->calculate_interpolate()/* && sgenjoint->detect_jerks(1) == 0*/) {
                 sgenjoint->Move();
@@ -125,13 +139,25 @@ void smooth_gen_test::conditional_execution()
                 max_acceleration[4] = 0.2;
                 max_acceleration[5] = 0.2;
 
+
+                //sgenstart->set_debug(true);
+
                 while (!sgenjoint->optimize_energy_cost(max_current_change, max_velocity, max_acceleration)) {
                         sr_ecp_msg.message("Optimizing...");
+
+                        sgenstart->load_absolute_joint_trajectory_pose(startPos);
+                        sgenstart->calculate_interpolate();
+                        sgenstart->Move();
+
                         if (sgenjoint->calculate_interpolate())
                         {
                             sgenjoint->Move();
                         }
                 }
+
+                sgenstart->load_absolute_joint_trajectory_pose(startPos);
+                sgenstart->calculate_interpolate();
+                sgenstart->Move();
         }
 
         sgenjoint->set_optimization(false);
