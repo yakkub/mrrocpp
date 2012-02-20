@@ -232,7 +232,10 @@ void model_with_wrist::set_kinematic_parameters(void)
 	lower_limit_axis[7] = -2000;
 
 	upper_limit_axis[0] = 1900;
-	upper_limit_axis[1] = 450;
+	// przed postawieniem szafy obkok robota
+	// upper_limit_axis[1] = 450;
+	// po postawieniu szafy obok robota
+	upper_limit_axis[1] = 60;
 	upper_limit_axis[2] = 100;
 	upper_limit_axis[3] = 100;
 	upper_limit_axis[4] = 380;
@@ -244,7 +247,10 @@ void model_with_wrist::set_kinematic_parameters(void)
 	 Zakresy ruchu poszczegolnych stopni swobody (w radianach lub milimetrach).
 	 ------------------------------------------------------------------------- */
 	lower_limit_joint[0] = -0.125; // [m]
-	lower_limit_joint[1] = -170.0 * M_PI / 180.0;
+	// przed postawieniem szafy obkok robota
+	//lower_limit_joint[1] = -170.0 * M_PI / 180.0;
+	// po postawieniu szafy obok robota
+	lower_limit_joint[1] = -0.45;
 	lower_limit_joint[2] = -130.0 * M_PI / 180.0;
 	lower_limit_joint[3] = -35.0 * M_PI / 180.0;
 	lower_limit_joint[4] = -90.0 * M_PI / 180.0;
