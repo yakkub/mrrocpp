@@ -35,33 +35,6 @@ newsmooth::~newsmooth()
 
 }
 
-//void newsmooth::move_to_start_position()
-//{
-//    if (!optimization)
-//    {
-//        return;
-//    }
-//
-//    if (optimization_start_position.size() == 0)
-//    {
-//        sr_ecp_msg.message("Optimization start position not defined");
-//        return;
-//    }
-//
-//    boost::shared_ptr <newsmooth> sgen;
-//
-//    if (pose_spec == lib::ECP_JOINT)
-//    {
-//        sgen = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, axes_num);
-//        sgen->set_debug(true);
-//    }
-//    else if (pose_spec == lib::ECP_MOTOR)
-//    {
-//        sgen = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_MOTOR, axes_num);
-//        sgen->set_debug(true);
-//    }
-//}
-
 bool newsmooth::calculate()
 {
 	//printf("\n################################## Calculate #################################\n");
@@ -486,6 +459,11 @@ bool newsmooth::load_trajectory_pose(const vector <double> & coordinates, lib::M
 
 	pose_vector.push_back(pose); //put new trajectory pose into a pose vector
 
+        if (optimization == true)
+        {
+            optimal_pose_vector.push_back(pose);
+        }
+
 	sr_ecp_msg.message("Pose loaded");
 
 	return true;
@@ -721,7 +699,7 @@ bool newsmooth::load_trajectory_from_file(const char* file_name)
 
 }*/
 
-bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std::vector<double> max_velocity, std::vector<double> max_acceleration)
+bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std::vector<double> max_velocity, std::vector<double> max_acceleration, double stopCondition)
 {
     bool finish = false;
 
@@ -753,6 +731,107 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
         return true;
     }
 
+    //calculation of the energy used during the last motion and its time of execution
+    double energySum = 0;
+    double timeSum = 0;
+
+
+    //energy
+    printf("energy vector size: %d\n", energy_vector.size());
+
+    energy_vector_iterator = energy_vector.begin();
+
+    for (i = 0; i < energy_vector.size() - 1; i++)
+    {
+        for (j = 0; j < axes_num; j++)
+        {
+            energySum += (*energy_vector_iterator)[j];
+        }
+        energy_vector_iterator++;
+    }
+
+    //time
+    pose_vector_iterator = pose_vector.begin();
+
+    for (i = 0; i < pose_vector.size(); i++)
+    {
+        timeSum += pose_vector_iterator->t;
+        pose_vector_iterator++;
+    }
+
+    if (debug)
+    {
+        if (energy_cost.size() == 0)
+        {
+            std::ofstream rmDataFile(last_loaded_file_path + "-optimizedData", std::ios::out);
+            rmDataFile << "";
+        }
+    }
+
+    energy_cost.push_back(energySum);
+
+    printf("optimal vector size: %d\n", optimal_pose_vector.size());
+
+    if (check_if_lowest_energy_cost(energySum) == true)
+    {
+        printf("wchodzi w lowest cost\n");
+        if (optimal_pose_vector.size() == pose_vector.size())
+        {
+            optimal_pose_vector_iterator = optimal_pose_vector.begin();
+            pose_vector_iterator = pose_vector.begin();
+
+            for (i = 0; i < pose_vector.size(); i++)
+            {
+                for (j = 0; j < axes_num; j++)
+                {
+                    optimal_pose_vector_iterator->v[j] = pose_vector_iterator->v[j];
+                    optimal_pose_vector_iterator->a[j] = pose_vector_iterator->a[j];
+                }
+
+                pose_vector_iterator++;
+                optimal_pose_vector_iterator++;
+            }
+        }
+    }
+
+    if (debug)
+    {
+        pose_vector_iterator = pose_vector.begin();
+
+        printf ("########### Energy consumption: %f \n", energySum);
+
+        if (last_loaded_file_path == "")
+        {
+            last_loaded_file_path = "../../src/application/generator_tester/trajectory.trj";
+        }
+
+        std::ofstream outDataFile(last_loaded_file_path + "-optimizedData", std::ios::app);
+        outDataFile << energySum << ";";
+        outDataFile << timeSum << ";";
+
+        for (j = 0; j < pose_vector.size(); j++)
+        {
+            //printf("\n%d:\n", j);
+            //printf("v:\t");
+            for (i = 0; i < axes_num; i++)
+            {
+               //printf("%f\t", pose_vector_iterator->v[i]);
+               outDataFile << pose_vector_iterator->v[i] << ";";
+            }
+            //printf("\n");
+            //printf("a:\t");
+            for (i = 0; i < axes_num; i++)
+            {
+                //printf("%f\t", pose_vector_iterator->a[i]);
+                outDataFile << pose_vector_iterator->a[i] << ";";
+            }
+            //printf("\n");
+            flushall();
+            pose_vector_iterator++;
+        }
+        outDataFile << "\n";
+    }
+
     double current_macrostep_in_pose = 1;
 
     pose_vector_iterator = pose_vector.begin();
@@ -776,17 +855,11 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
         {
             for (j = 0; j < axes_num; j++)
             {
-                //if (vpc.eq(toHigh[j], 0.0)) {
-                //pose_vector_iterator->v[j] += 0.01;
-                //pose_vector_iterator->a[j] += 0.005;
 
                 if (control[j] < 0 && pose_vector_iterator->v[j] != 0.005 && pose_vector_iterator->a[j] != 0.005)
                 {
                     max_current_change_exceeded = true;
                 }
-
-                //printf("control v: %f\n", control[j] * 0.00006);
-                //printf("control a: %f\n", control[j] * 0.00004);
 
                 pose_vector_iterator->v[j] += control[j] * 0.00006;
                 pose_vector_iterator->a[j] += control[j] * 0.00004;
@@ -845,7 +918,6 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
 
         for (j = 0; j < axes_num; j++)
         {
-            //if (fabs(temp2[j] - temp1[j]) > max_current_change[j]) {
             if (fabs(temp2[j] - temp1[j]) > highest_current_change[j])
             {
                 highest_current_change[j] = fabs(temp2[j] - temp1[j]);
@@ -856,7 +928,6 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
                     control[j] = control[j] * 3;
                 }
             }
-            //}
         }
 
         current_vector_iterator++;
@@ -867,32 +938,6 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
 
         current_macrostep_in_pose++;
     }
-
-    double energySum = 0;
-
-    printf("energy vector size: %d\n", energy_vector.size());
-
-    energy_vector_iterator = energy_vector.begin();
-
-    for (i = 0; i < energy_vector.size() - 1; i++)
-    {
-        for (j = 0; j < axes_num; j++)
-        {
-            energySum += (*energy_vector_iterator)[j];
-        }
-        energy_vector_iterator++;
-    }
-
-    if (debug)
-    {
-        if (energy_cost.size() == 0)
-        {
-            std::ofstream rmDataFile(last_loaded_file_path + "-optimizedData", std::ios::out);
-            rmDataFile << "";
-        }
-    }
-
-    energy_cost.push_back(energySum);
 
     double cost_change1;
     double cost_change2;
@@ -910,51 +955,16 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
 
 
     if (energy_cost.size() > 3 &&
-        cost_change1 < 1.02 && cost_change1 > 0.98 &&
-        cost_change2 < 1.02 && cost_change2 > 0.98 &&
-        cost_change3 < 1.02 && cost_change3 > 0.98 &&
+        cost_change1 < (1.0 + stopCondition) && cost_change1 > (1.0 - stopCondition) &&
+        cost_change2 < (1.0 + stopCondition) && cost_change2 > (1.0 - stopCondition) &&
+        cost_change3 < (1.0 + stopCondition) && cost_change3 > (1.0 - stopCondition) &&
         max_current_change_exceeded == false)
         //check if optimized
     {
         finish = true;
     }
 
-    if (debug)
-    {
-        pose_vector_iterator = pose_vector.begin();
-
-        printf ("########### Energy consumption: %f \n", energySum);
-
-        if (last_loaded_file_path == "")
-        {
-            last_loaded_file_path = "../../src/application/generator_tester/trajectory.trj";
-        }
-
-        std::ofstream outDataFile(last_loaded_file_path + "-optimizedData", std::ios::app);
-        outDataFile << energySum << ";";
-
-        for (j = 0; j < pose_vector.size(); j++)
-        {
-            //printf("\n%d:\n", j);
-            //printf("v:\t");
-            for (i = 0; i < axes_num; i++)
-            {
-               //printf("%f\t", pose_vector_iterator->v[i]);
-               outDataFile << pose_vector_iterator->v[i] << ";";
-            }
-            //printf("\n");
-            //printf("a:\t");
-            for (i = 0; i < axes_num; i++)
-            {
-                //printf("%f\t", pose_vector_iterator->a[i]);
-                outDataFile << pose_vector_iterator->a[i] << ";";
-            }
-            //printf("\n");
-            flushall();
-            pose_vector_iterator++;
-        }
-        outDataFile << "\n";
-    }
+    optimal_pose_vector_iterator = optimal_pose_vector.begin();
 
     if (finish == true)
     {
@@ -989,33 +999,33 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current_change, std
             outfile << "RELATIVE\n\n";
         }
 
-        pose_vector_iterator = pose_vector.begin();
+        optimal_pose_vector_iterator = optimal_pose_vector.begin();
 
-        for (i = 0; i < pose_vector.size(); i++)
+        for (i = 0; i < optimal_pose_vector.size(); i++)
         {
             for (j = 0; j < axes_num; j++)
             {
-                outfile << pose_vector_iterator->v[j] << "\t";
+                outfile << optimal_pose_vector_iterator->v[j] << "\t";
             }
 
             outfile << "\n";
 
             for (j = 0; j < axes_num; j++)
             {
-                outfile << pose_vector_iterator->a[j] << "\t";
+                outfile << optimal_pose_vector_iterator->a[j] << "\t";
             }
 
             outfile << "\n";
 
             for (j = 0; j < axes_num; j++)
             {
-                outfile << pose_vector_iterator->coordinates[j] << "\t";
+                outfile << optimal_pose_vector_iterator->coordinates[j] << "\t";
             }
 
             outfile << "\n";
             outfile << "\n";
 
-            pose_vector_iterator++;
+            optimal_pose_vector_iterator++;
         }
 
         sr_ecp_msg.message("Optimized!");

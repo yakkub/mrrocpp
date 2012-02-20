@@ -69,10 +69,6 @@ ecp::common::generator::velocity_profile_calculator::bang_bang_profile> {
 		 * Destructor.
 		 */
 		virtual ~newsmooth();
-//                *
-//                 * Moves manipulator to the position from which optimized trajectory is started.
-//
-                //void move_to_start_position();
 		/**
 		 * Loads a single trajectory pose described in joint coordinates (absolute motion) to the list. Maximal velocities and accelerations are set automatically.
 		 * @param coordinates desired position
@@ -147,7 +143,7 @@ ecp::common::generator::velocity_profile_calculator::bang_bang_profile> {
                  * Optimization is based on minimizing the current cost.
                  * @return true if optimization finished
                  */
-                bool optimize_energy_cost(std::vector<double> max_current_change, std::vector<double> max_velocity, std::vector<double> max_acceleration);
+                bool optimize_energy_cost(std::vector<double> max_current_change, std::vector<double> max_velocity, std::vector<double> max_acceleration, double stopCondition);
 };
 
 } // namespace generator

@@ -75,6 +75,14 @@ protected:
 	 * Energy vector iterator.
 	 */
 	std::vector <std::vector <double> >::iterator energy_vector_iterator;
+        /**
+         * Optimal pose vector.
+         */
+        std::vector <Pos> optimal_pose_vector;
+        /**
+         * Optimal pose vector iterator.
+         */
+        typename std::vector <Pos>::iterator optimal_pose_vector_iterator;
 	/**
 	 * Type of the commanded motion (absolute or relative)
 	 */
@@ -324,6 +332,20 @@ protected:
 		}
 		flushall();
 	}
+        /**
+         *
+         */
+        bool check_if_lowest_energy_cost(double cost)
+        {
+            for (int i = 0; i < energy_cost.size(); i++) {
+                if (energy_cost[i] < cost)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
 public:
 	/**
@@ -688,6 +710,7 @@ public:
                         energy_vector.clear();
                         energy_cost.clear();
                         pose_vector.clear();
+                        optimal_pose_vector.clear();
 		}
 
 		calculated = false;

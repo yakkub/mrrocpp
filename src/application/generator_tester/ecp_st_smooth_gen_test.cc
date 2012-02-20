@@ -95,10 +95,10 @@ void smooth_gen_test::conditional_execution()
         //sgenjoint->Move();
 
         network_path = "../../src/application/generator_tester/trajectory.trj";
-        sgenjoint->load_trajectory_from_file(network_path.c_str());
         //network_path = std::string(ecp_t.mrrocpp_network_path);
 
         sgenjoint->set_optimization(true);
+        sgenjoint->load_trajectory_from_file(network_path.c_str());
 
         std::vector <double> startPos = std::vector <double>(6);
         startPos[0] = -0.101;
@@ -108,6 +108,30 @@ void smooth_gen_test::conditional_execution()
         startPos[4] = 3.697;
         startPos[5] = -2.738;
 
+        std::vector <double> max_current_change = std::vector <double>(6);
+        max_current_change[0] = 4000;
+        max_current_change[1] = 3000;
+        max_current_change[2] = 2500;
+        max_current_change[3] = 1500;
+        max_current_change[4] = 1500;
+        max_current_change[5] = 800;
+
+        std::vector <double> max_velocity = std::vector <double>(6);
+        max_velocity[0] = 0.7;
+        max_velocity[1] = 0.7;
+        max_velocity[2] = 0.7;
+        max_velocity[3] = 0.7;
+        max_velocity[4] = 0.7;
+        max_velocity[5] = 0.7;
+
+        std::vector <double> max_acceleration = std::vector <double>(6);
+        max_acceleration[0] = 0.2;
+        max_acceleration[1] = 0.2;
+        max_acceleration[2] = 0.2;
+        max_acceleration[3] = 0.2;
+        max_acceleration[4] = 0.2;
+        max_acceleration[5] = 0.2;
+
         sgenstart->load_absolute_joint_trajectory_pose(startPos);
         sgenstart->calculate_interpolate();
         sgenstart->Move();
@@ -115,34 +139,9 @@ void smooth_gen_test::conditional_execution()
         if (sgenjoint->calculate_interpolate()/* && sgenjoint->detect_jerks(1) == 0*/) {
                 sgenjoint->Move();
 
-                std::vector <double> max_current_change = std::vector <double>(6);
-                max_current_change[0] = 4000;
-                max_current_change[1] = 3000;
-                max_current_change[2] = 2500;
-                max_current_change[3] = 1500;
-                max_current_change[4] = 1500;
-                max_current_change[5] = 800;
-
-                std::vector <double> max_velocity = std::vector <double>(6);
-                max_velocity[0] = 0.7;
-                max_velocity[1] = 0.7;
-                max_velocity[2] = 0.7;
-                max_velocity[3] = 0.7;
-                max_velocity[4] = 0.7;
-                max_velocity[5] = 0.7;
-
-                std::vector <double> max_acceleration = std::vector <double>(6);
-                max_acceleration[0] = 0.2;
-                max_acceleration[1] = 0.2;
-                max_acceleration[2] = 0.2;
-                max_acceleration[3] = 0.2;
-                max_acceleration[4] = 0.2;
-                max_acceleration[5] = 0.2;
-
-
                 //sgenstart->set_debug(true);
 
-                while (!sgenjoint->optimize_energy_cost(max_current_change, max_velocity, max_acceleration)) {
+                while (!sgenjoint->optimize_energy_cost(max_current_change, max_velocity, max_acceleration, 0.04)) {
                         sr_ecp_msg.message("Optimizing...");
 
                         sgenstart->load_absolute_joint_trajectory_pose(startPos);
