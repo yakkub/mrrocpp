@@ -78,35 +78,41 @@ smooth_gen_test::smooth_gen_test(task::task & _ecp_t) :
 
         //for optimization
         sgenstart = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, 6);
-        network_path = std::string(_ecp_t.mrrocpp_network_path);
+        get_pos = (boost::shared_ptr <get_position>) new get_position(_ecp_t, lib::ECP_JOINT, 6);
+        //network_path = std::string(_ecp_t.mrrocpp_network_path);
+        network_path = _ecp_t.config.value <std::string>("trajectory_file", lib::MP_SECTION);
 }
 
 void smooth_gen_test::conditional_execution()
 {
-
-        sr_ecp_msg.message("conditional execution");
-        sgenjoint->set_optimization(false);
-        sgenjoint->reset();
-        std::vector <double> coordinates1(6); //postument
-        std::vector <double> coordinates2(7); //track
+        //std::vector <double> coordinates1(6); //postument
+        //std::vector <double> coordinates2(7); //track
 
         //network_path = "../../src/application/generator_tester/optimizedTraj.trj";
         //sgenjoint->load_coordinates_from_file(network_path.c_str());
         //sgenjoint->Move();
 
-        network_path = "../../src/application/generator_tester/trajectory.trj";
+        //network_path = "../../src/application/generator_tester/trajectory.trj";
         //network_path = std::string(ecp_t.mrrocpp_network_path);
 
-        sgenjoint->set_optimization(true);
-        sgenjoint->load_trajectory_from_file(network_path.c_str());
-
         std::vector <double> startPos = std::vector <double>(6);
-        startPos[0] = -0.101;
+        /*startPos[0] = -0.101;
         startPos[1] = -1.542;
         startPos[2] = 0.020;
         startPos[3] = 1.134;
         startPos[4] = 3.697;
-        startPos[5] = -2.738;
+        startPos[5] = -2.738;*/
+
+        get_pos->Move();
+        startPos = get_pos->get_position_vector();
+
+        /*std::vector <double> max_current = std::vector <double>(6);
+        max_current_change[0] = 13000;
+        max_current_change[1] = 16000;
+        max_current_change[2] = 8000;
+        max_current_change[3] = 8000;
+        max_current_change[4] = 8000;
+        max_current_change[5] = 8000;
 
         std::vector <double> max_current_change = std::vector <double>(6);
         max_current_change[0] = 4000;
@@ -132,35 +138,9 @@ void smooth_gen_test::conditional_execution()
         max_acceleration[4] = 0.2;
         max_acceleration[5] = 0.2;
 
-        sgenstart->load_absolute_joint_trajectory_pose(startPos);
-        sgenstart->calculate_interpolate();
-        sgenstart->Move();
+        sgenjoint->optimize_energy_cost(startPos, max_current, max_current_change, max_velocity, max_acceleration, 0.04, sgenstart, network_path.c_str()); */
 
-        if (sgenjoint->calculate_interpolate()/* && sgenjoint->detect_jerks(1) == 0*/) {
-                sgenjoint->Move();
-
-                //sgenstart->set_debug(true);
-
-                while (!sgenjoint->optimize_energy_cost(max_current_change, max_velocity, max_acceleration, 0.04)) {
-                        sr_ecp_msg.message("Optimizing...");
-
-                        sgenstart->load_absolute_joint_trajectory_pose(startPos);
-                        sgenstart->calculate_interpolate();
-                        sgenstart->Move();
-
-                        if (sgenjoint->calculate_interpolate())
-                        {
-                            sgenjoint->Move();
-                        }
-                }
-
-                sgenstart->load_absolute_joint_trajectory_pose(startPos);
-                sgenstart->calculate_interpolate();
-                sgenstart->Move();
-        }
-
-        sgenjoint->set_optimization(false);
-        sgenjoint->reset();
+        sgenjoint->optimize_energy_cost_postument(sgenstart, network_path.c_str(), startPos, 0.04);
 
 	// JOINT ABSOLUTE
 	/*sr_ecp_msg.message("Joint absolute");

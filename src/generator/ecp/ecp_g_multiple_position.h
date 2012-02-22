@@ -144,7 +144,7 @@ protected:
          */
         std::vector<double> optimization_start_position;
 
-	//--------- VELOCITY AND ACCELERATION VECTORS ---------
+        //--------- VELOCITY AND ACCELERATION VECTORS ---------
 	/**
 	 * Standard velocity in joint coordinates.
 	 */

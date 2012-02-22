@@ -4,6 +4,8 @@
 #include "application/generator_tester/ecp_mp_st_smooth_gen_test.h"
 #include "base/ecp/ecp_generator.h"
 
+#include "generator/ecp/get_position/ecp_g_get_position.h"
+
 namespace mrrocpp {
 namespace ecp {
 namespace common {
@@ -22,6 +24,7 @@ private:
 
         //for optimization
         boost::shared_ptr <newsmooth> sgenstart;
+        boost::shared_ptr <get_position> get_pos;
 
 	bool track;
 	bool postument;
