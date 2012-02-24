@@ -674,7 +674,7 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current, std::vecto
 
     if (check_if_lowest_energy_cost(energySum) == true)
     {
-        printf("wchodzi w lowest cost\n");
+        printf("lowest cost\n");
         if (optimal_pose_vector.size() == pose_vector.size())
         {
             optimal_pose_vector_iterator = optimal_pose_vector.begin();
@@ -756,38 +756,45 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current, std::vecto
             for (j = 0; j < axes_num; j++)
             {
 
-                if (control[j] < 0 && pose_vector_iterator->v[j] != 0.005 && pose_vector_iterator->a[j] != 0.005)
+                if (control[j] < 0 && pose_vector_iterator->v[j] != 0.01 && pose_vector_iterator->a[j] != 0.01)
                 {
                     max_current_change_exceeded = true;
                 }
 
-                if (control2[j] < 0 && pose_vector_iterator->v[j] != 0.005 && pose_vector_iterator->a[j] != 0.005)
+                if (control2[j] < 0 && pose_vector_iterator->v[j] != 0.01 && pose_vector_iterator->a[j] != 0.01)
                 {
                     max_current_exceeded = true;
                 }
 
-                pose_vector_iterator->v[j] += control[j] * 0.00006;
-                pose_vector_iterator->a[j] += control[j] * 0.00004;
-                pose_vector_iterator->v[j] += control2[j] * 0.00006;
-                pose_vector_iterator->a[j] += control2[j] * 0.00004;
+                pose_vector_iterator->v[j] += (max_velocity[j] * control[j] / max_current_change[j]) * 0.4;
+                pose_vector_iterator->a[j] += (max_acceleration[j] * control[j] / max_current_change[j]) * 0.4;
+                printf("control[%d]: %f\n", j, (max_velocity[j] * control[j] / max_current_change[j]) * 0.4);
+
+                if (control2[j] < 0)
+                {
+                    printf("to high current\n");
+                    pose_vector_iterator->v[j] += (max_velocity[j] * control2[j] / max_current_change[j]) * 0.4;
+                    pose_vector_iterator->a[j] += (max_acceleration[j] * control2[j] / max_current_change[j]) * 0.4;
+                }
+
                 //finish = false;
                 if (pose_vector_iterator->v[j] >= max_velocity[j])
                 {
                     pose_vector_iterator->v[j] = max_velocity[j];
                     //finish = true;
                 }
-                else if (pose_vector_iterator->v[j] <= 0.005)
+                else if (pose_vector_iterator->v[j] <= 0.01)
                 {
-                    pose_vector_iterator->v[j] = 0.005;
+                    pose_vector_iterator->v[j] = 0.01;
                 }
                 if (pose_vector_iterator->a[j] >= max_acceleration[j])
                 {
                     pose_vector_iterator->a[j] = max_acceleration[j];
                     //finish = true;
                 }
-                else if (pose_vector_iterator->a[j] <= 0.005)
+                else if (pose_vector_iterator->a[j] <= 0.01)
                 {
-                    pose_vector_iterator->a[j] = 0.005;
+                    pose_vector_iterator->a[j] = 0.01;
                 }
                 //}
             }
@@ -833,21 +840,15 @@ bool newsmooth::optimize_energy_cost(std::vector<double> max_current, std::vecto
                 highest_current_change[j] = fabs(temp2[j] - temp1[j]);
                 control[j] = max_current_change[j] - fabs(temp2[j] - temp1[j]);
 
-                if (control[j] < 0)
-                {
-                    control[j] = control[j] * 3;
-                }
             }
 
             if (fabs(temp2[j]) > highest_current[j])
             {
                 highest_current[j] = fabs(temp2[j]);
-                control[j] = max_current[j] - fabs(temp2[j]);
+                control2[j] = max_current[j] - fabs(temp2[j]);
+                //printf("max current %f\n", max_current[j]);
+                //printf("current %f\n", fabs(temp2[j]));
 
-                if (control2[j] < 0)
-                {
-                    control2[j] = control2[j] * 2;
-                }
             }
         }
 
@@ -985,9 +986,9 @@ void newsmooth::optimize_energy_cost(std::vector<double> startPos, std::vector<d
                     }
             }
 
-            sgenstart->load_absolute_joint_trajectory_pose(startPos);
-            sgenstart->calculate_interpolate();
-            sgenstart->Move();
+            //sgenstart->load_absolute_joint_trajectory_pose(startPos);
+            //sgenstart->calculate_interpolate();
+            //sgenstart->Move();
     }
 
     set_optimization(false);
@@ -1008,17 +1009,17 @@ void newsmooth::optimize_energy_cost_postument(boost::shared_ptr <newsmooth> sge
     max_current_change[0] = 4000;
     max_current_change[1] = 3000;
     max_current_change[2] = 2500;
-    max_current_change[3] = 1500;
-    max_current_change[4] = 1500;
+    max_current_change[3] = 2500;
+    max_current_change[4] = 2500;
     max_current_change[5] = 600;
 
     std::vector <double> max_velocity = std::vector <double>(6);
-    max_velocity[0] = 0.9;
-    max_velocity[1] = 0.9;
-    max_velocity[2] = 0.9;
-    max_velocity[3] = 0.9;
-    max_velocity[4] = 0.9;
-    max_velocity[5] = 0.9;
+    max_velocity[0] = 0.5;
+    max_velocity[1] = 0.5;
+    max_velocity[2] = 0.5;
+    max_velocity[3] = 0.5;
+    max_velocity[4] = 0.5;
+    max_velocity[5] = 0.5;
 
     std::vector <double> max_acceleration = std::vector <double>(6);
     max_acceleration[0] = 0.2;
@@ -1027,6 +1028,47 @@ void newsmooth::optimize_energy_cost_postument(boost::shared_ptr <newsmooth> sge
     max_acceleration[3] = 0.2;
     max_acceleration[4] = 0.2;
     max_acceleration[5] = 0.2;
+
+    optimize_energy_cost(start_pos, max_current, max_current_change, max_velocity, max_acceleration, stop_condition, sgenstart, file_name);
+}
+
+void newsmooth::optimize_energy_cost_track(boost::shared_ptr <newsmooth> sgenstart, const char *file_name, std::vector<double> start_pos, double stop_condition)
+{
+    std::vector <double> max_current = std::vector <double>(7);
+    max_current[0] = 22000;
+    max_current[1] = 13000;
+    max_current[2] = 16000;
+    max_current[3] = 8000;
+    max_current[4] = 8000;
+    max_current[5] = 8000;
+    max_current[6] = 8000;
+
+    std::vector <double> max_current_change = std::vector <double>(7);
+    max_current_change[0] = 7000;
+    max_current_change[1] = 4000;
+    max_current_change[2] = 3000;
+    max_current_change[3] = 2500;
+    max_current_change[4] = 2500;
+    max_current_change[5] = 2500;
+    max_current_change[6] = 600;
+
+    std::vector <double> max_velocity = std::vector <double>(7);
+    max_velocity[0] = 0.05;
+    max_velocity[1] = 0.5;
+    max_velocity[2] = 0.5;
+    max_velocity[3] = 0.5;
+    max_velocity[4] = 0.5;
+    max_velocity[5] = 0.5;
+    max_velocity[6] = 0.5;
+
+    std::vector <double> max_acceleration = std::vector <double>(7);
+    max_acceleration[0] = 0.01;
+    max_acceleration[1] = 0.2;
+    max_acceleration[2] = 0.2;
+    max_acceleration[3] = 0.2;
+    max_acceleration[4] = 0.2;
+    max_acceleration[5] = 0.2;
+    max_acceleration[6] = 0.2;
 
     optimize_energy_cost(start_pos, max_current, max_current_change, max_velocity, max_acceleration, stop_condition, sgenstart, file_name);
 }

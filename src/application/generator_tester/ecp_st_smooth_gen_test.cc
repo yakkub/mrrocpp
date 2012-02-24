@@ -40,6 +40,9 @@ smooth_gen_test::smooth_gen_test(task::task & _ecp_t) :
                 sgenangle = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 6);
                 sgenangle->set_debug(true);
 
+                sgenstart = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, 6);
+                get_pos = (boost::shared_ptr <get_position>) new get_position(_ecp_t, lib::ECP_JOINT, 6);
+
         } else if (_ecp_t.ecp_m_robot->robot_name == lib::irp6ot_m::ROBOT_NAME) {
                 sgenjoint = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, 7);
                 sgenjoint->set_debug(true);
@@ -56,6 +59,9 @@ smooth_gen_test::smooth_gen_test(task::task & _ecp_t) :
 
                 sgenangle = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 6);
                 sgenangle->set_debug(true);
+
+                sgenstart = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, 7);
+                get_pos = (boost::shared_ptr <get_position>) new get_position(_ecp_t, lib::ECP_JOINT, 7);
 
         } else if (_ecp_t.ecp_m_robot->robot_name == lib::conveyor::ROBOT_NAME) {
                 sgenjoint = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, 1);
@@ -77,8 +83,6 @@ smooth_gen_test::smooth_gen_test(task::task & _ecp_t) :
         }
 
         //for optimization
-        sgenstart = (boost::shared_ptr <newsmooth>) new newsmooth(_ecp_t, lib::ECP_JOINT, 6);
-        get_pos = (boost::shared_ptr <get_position>) new get_position(_ecp_t, lib::ECP_JOINT, 6);
         //network_path = std::string(_ecp_t.mrrocpp_network_path);
         network_path = _ecp_t.config.value <std::string>("trajectory_file", lib::MP_SECTION);
 }
@@ -139,8 +143,14 @@ void smooth_gen_test::conditional_execution()
         max_acceleration[5] = 0.2;
 
         sgenjoint->optimize_energy_cost(startPos, max_current, max_current_change, max_velocity, max_acceleration, 0.04, sgenstart, network_path.c_str()); */
-
-        sgenjoint->optimize_energy_cost_postument(sgenstart, network_path.c_str(), startPos, 0.04);
+        if (postument)
+        {
+            sgenjoint->optimize_energy_cost_postument(sgenstart, network_path.c_str(), startPos, 0.04);
+        }
+        else if (track)
+        {
+            sgenjoint->optimize_energy_cost_track(sgenstart, network_path.c_str(), startPos, 0.04);
+        }
 
 	// JOINT ABSOLUTE
 	/*sr_ecp_msg.message("Joint absolute");

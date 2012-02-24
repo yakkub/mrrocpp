@@ -144,10 +144,15 @@ ecp::common::generator::velocity_profile_calculator::bang_bang_profile> {
                  */
                 void optimize_energy_cost(std::vector<double> startPos, std::vector<double> max_current, std::vector<double> max_current_change, std::vector<double> max_velocity, std::vector<double> max_acceleration, double stop_condition, boost::shared_ptr <newsmooth> sgenstart, const char* file_name);
                 /**
-                 * Performs basic optimization of the motion by setting new values of maximal velocity and maximal acceleration separately on each trajectory segment.
+                 * Performs basic optimization of the motion of irp6-postument robot by setting new values of maximal velocity and maximal acceleration separately on each trajectory segment.
                  * Optimization is based on minimizing the energy cost.
                  */
                 void optimize_energy_cost_postument(boost::shared_ptr <newsmooth> sgenstart, const char *file_name, std::vector<double> start_pos, double stop_condition);
+                /**
+                 * Performs basic optimization of the motion of irp6-track robot by setting new values of maximal velocity and maximal acceleration separately on each trajectory segment.
+                 * Optimization is based on minimizing the energy cost.
+                 */
+                void optimize_energy_cost_track(boost::shared_ptr <newsmooth> sgenstart, const char *file_name, std::vector<double> start_pos, double stop_condition);
 };
 
 } // namespace generator

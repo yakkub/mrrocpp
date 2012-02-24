@@ -36,7 +36,7 @@ void smooth_file_from_mp::conditional_execution()
 	sgen->load_trajectory_from_file(path.c_str());
 
 	if (detect_jerks) {
-		if (sgen->calculate_interpolate() && sgen->detect_jerks(1) == 0) {
+                if (sgen->calculate_interpolate() /*&& sgen->detect_jerks(1) == 0*/) {
 			sgen->Move();
 		}
 	} else {
