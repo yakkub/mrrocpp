@@ -539,7 +539,8 @@ void rubik_cube_solver::face_turn_op(common::CUBE_TURN_ANGLE turn_angle)
 	wait_for_task_termination(false, lib::irp6ot_tfg::ROBOT_NAME);
 
 	// odejscie tracka od postumenta
-	set_next_ecp_state(ecp_mp::generator::ECP_GEN_SMOOTH_JOINT_FILE_FROM_MP, (int) lib::ABSOLUTE, "../../src/application/rcsc/trj/irp6ot_sm_fturn_de.trj", lib::irp6ot_m::ROBOT_NAME);
+        set_next_ecp_state(ecp_mp::generator::ECP_GEN_SMOOTH_ANGLE_AXIS_FILE_FROM_MP, (int) lib::RELATIVE, "../../src/application/rcsc/trj/irp6ot_cube_departure.trj", lib::irp6ot_m::ROBOT_NAME.c_str());
+        //set_next_ecp_state(ecp_mp::generator::ECP_GEN_SMOOTH_JOINT_FILE_FROM_MP, (int) lib::ABSOLUTE, "../../src/application/rcsc/trj/irp6ot_sm_fturn_de.trj", lib::irp6ot_m::ROBOT_NAME);
 	// uruchomienie generatora empty_gen
 	wait_for_task_termination(false, lib::irp6ot_m::ROBOT_NAME);
 }

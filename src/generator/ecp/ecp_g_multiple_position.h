@@ -552,7 +552,7 @@ public:
 					}
 
 					if (debug) {
-                                                //printf("%f\t", *tempIter);
+                                                printf("%f\t", *tempIter);
 						//printf("%f\t", currents[i]);
 					}
 					tempIter++;
@@ -565,7 +565,7 @@ public:
 				}
 
 				if (debug) {
-                                        //printf("\n");
+                                        printf("\n");
 					flushall();
 				}
 				break;
@@ -666,13 +666,13 @@ public:
 		}
 
 		if (debug) {
-                    //print_pose_vector();
+                    print_pose_vector();
 		}
 
 		interpolated = interpolate();
 
 		if (debug) {
-                        //print_coordinate_vector();
+                    print_coordinate_vector();
 		}
 
 		return interpolated;
