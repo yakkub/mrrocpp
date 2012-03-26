@@ -26,6 +26,7 @@
 #include "base/lib/sr/srlib.h"
 
 #include "ui_ecp_r_common012.h"
+#include "base/lib/mrmath/mrmath.h"
 
 namespace mrrocpp {
 namespace ui {
@@ -368,8 +369,23 @@ void EcpRobot::move_xyz_euler_zyz(const double final_position[7])
 	// Odczyt aktualnego polozenia we wsp. zewn. xyz i katy Euler'a Z-Y-Z
 	read_xyz_euler_zyz(current_position);
 
+	lib::Homog_matrix current_htm;
+	read_htm(current_htm);
+
+	lib::Homog_matrix desired_htm;
+	desired_htm.set_from_xyz_euler_zyz(lib::Xyz_Euler_Zyz_vector(final_position));
+
+	lib::Homog_matrix increment_htm;
+	increment_htm = (!current_htm) * desired_htm;
+
+	lib::Xyz_Euler_Zyz_vector increment_vector;
+	increment_htm.get_xyz_euler_zyz(increment_vector);
+
+	double increment_table[6]; // polozenie aktualne
+	increment_vector.to_table(increment_table);
+
 	for (int j = 0; j < 6; j++) {
-		temp = fabs(final_position[j] - current_position[j]);
+		temp = fabs(increment_table[j]);
 		nr_tmp = (int) ceil(temp / END_EFFECTOR_STEP[j]);
 		nr_of_steps = (nr_of_steps > nr_tmp) ? nr_of_steps : nr_tmp;
 	}
@@ -388,7 +404,7 @@ void EcpRobot::move_xyz_euler_zyz(const double final_position[7])
 	if (nr_of_steps < 1) // Nie wykowywac bo zadano ruch do aktualnej pozycji
 		return;
 
-	ecp->ecp_command.arm.pf_def.arm_frame.set_from_xyz_euler_zyz(lib::Xyz_Euler_Zyz_vector(final_position));
+	ecp->ecp_command.arm.pf_def.arm_frame = desired_htm;
 
 	execute_motion();
 
@@ -495,6 +511,24 @@ void EcpRobot::read_xyz_euler_zyz(double current_position[])
 	lib::Xyz_Euler_Zyz_vector tmp_vector;
 	tmp.get_xyz_euler_zyz(tmp_vector);
 	tmp_vector.to_table(current_position);
+
+}
+// ---------------------------------------------------------------
+
+// ---------------------------------------------------------------
+void EcpRobot::read_htm(lib::Homog_matrix & htm)
+{
+	// Zlecenie odczytu polozenia
+
+	// Parametry zlecenia ruchu i odczytu polozenia
+	ecp->ecp_command.get_type = ARM_DEFINITION;
+	ecp->ecp_command.instruction_type = lib::GET;
+//	ecp->ecp_command.get_arm_type = lib::FRAME;
+	ecp->ecp_command.interpolation_type = lib::MIM;
+
+	execute_motion();
+
+	htm = ecp->reply_package.arm.pf_def.arm_frame;
 
 }
 // ---------------------------------------------------------------
