@@ -378,14 +378,23 @@ void EcpRobot::move_xyz_euler_zyz(const double final_position[7])
 	lib::Homog_matrix increment_htm;
 	increment_htm = (!current_htm) * desired_htm;
 
-	lib::Xyz_Euler_Zyz_vector increment_vector;
-	increment_htm.get_xyz_euler_zyz(increment_vector);
+	lib::Xyz_Angle_Axis_Gamma_vector increment_vector;
+	increment_htm.get_xyz_angle_axis_gamma(increment_vector);
 
-	double increment_table[6]; // polozenie aktualne
-	increment_vector.to_table(increment_table);
+//	std::cout << "increment_vector :" << increment_vector << "\n\n";
 
-	for (int j = 0; j < 6; j++) {
-		temp = fabs(increment_table[j]);
+//	double increment_table[6]; // polozenie aktualne
+//	increment_vector.(increment_table);
+
+	int axis;
+
+	for (int j = 0; j < 4; j++) {
+		if (j == 3) {
+			axis = 6;
+		} else {
+			axis = j;
+		}
+		temp = fabs(increment_vector[axis]);
 		nr_tmp = (int) ceil(temp / END_EFFECTOR_STEP[j]);
 		nr_of_steps = (nr_of_steps > nr_tmp) ? nr_of_steps : nr_tmp;
 	}
