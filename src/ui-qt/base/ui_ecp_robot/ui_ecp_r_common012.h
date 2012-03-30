@@ -29,7 +29,6 @@ protected:
 	// recznych dla roznych wspolrzednych
 	double MOTOR_STEP[lib::MAX_SERVOS_NR]; // Przyrost kata obrotu walu silnika [rad]
 	double JOINT_STEP[lib::MAX_SERVOS_NR]; // Przyrost kata obrotu w przegubie obrotowym [rad]
-	double END_EFFECTOR_STEP[lib::MAX_SERVOS_NR]; // Przyrost wspolrzednej polozenia koncowki [mm]
 
 	double END_EFFECTOR_LINEAR_STEP;
 	double END_EFFECTOR_ANGULAR_STEP;
