@@ -506,23 +506,26 @@ void EcpRobot::move_xyz_angle_axis_relative(const double position_increment[7])
 // ---------------------------------------------------------------
 void EcpRobot::read_xyz_euler_zyz(double current_position[])
 {
-	// Zlecenie odczytu polozenia
 
-	// Parametry zlecenia ruchu i odczytu polozenia
-	ecp->ecp_command.get_type = ARM_DEFINITION;
-	ecp->ecp_command.instruction_type = lib::GET;
-//	ecp->ecp_command.get_arm_type = lib::FRAME;
-	ecp->ecp_command.interpolation_type = lib::MIM;
+	lib::Homog_matrix tmp;
 
-	execute_motion();
+	read_htm(tmp);
 
-	lib::Homog_matrix tmp = ecp->reply_package.arm.pf_def.arm_frame;
 	lib::Xyz_Euler_Zyz_vector tmp_vector;
 	tmp.get_xyz_euler_zyz(tmp_vector);
 	tmp_vector.to_table(current_position);
 
 }
 // ---------------------------------------------------------------
+
+void move_htm_absolute(lib::Homog_matrix & desired_htm, lib::Homog_matrix & current_htm)
+{
+
+}
+void move_htm_relative(lib::Homog_matrix & desired_htm)
+{
+
+}
 
 // ---------------------------------------------------------------
 void EcpRobot::read_htm(lib::Homog_matrix & htm)
@@ -544,15 +547,9 @@ void EcpRobot::read_htm(lib::Homog_matrix & htm)
 
 void EcpRobot::read_xyz_angle_axis(double current_position[])
 {
-	// Pobranie aktualnego polozenia ramienia robota
+	lib::Homog_matrix tmp;
+	read_htm(tmp);
 
-	ecp->ecp_command.get_type = ARM_DEFINITION;
-	ecp->ecp_command.instruction_type = lib::GET;
-//	ecp->ecp_command.get_arm_type = lib::FRAME;
-	ecp->ecp_command.interpolation_type = lib::MIM;
-	execute_motion();
-
-	lib::Homog_matrix tmp = ecp->reply_package.arm.pf_def.arm_frame;
 	lib::Xyz_Angle_Axis_vector tmp_vector;
 	tmp.get_xyz_angle_axis(tmp_vector);
 	tmp_vector.to_table(current_position);

@@ -73,6 +73,9 @@ public:
 	void set_tool_xyz_angle_axis(const lib::Xyz_Angle_Axis_vector &tool_vector);
 	void set_tool_xyz_euler_zyz(const lib::Xyz_Euler_Zyz_vector &tool_vector);
 
+	void move_htm_absolute(lib::Homog_matrix & desired_htm, lib::Homog_matrix & current_htm);
+	void move_htm_relative(lib::Homog_matrix & desired_htm);
+
 	// Odczyt polozenia
 	void read_htm(lib::Homog_matrix & htm);
 	void read_xyz_euler_zyz(double current_position[7]);
