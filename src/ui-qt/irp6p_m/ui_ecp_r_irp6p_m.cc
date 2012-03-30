@@ -30,6 +30,9 @@ EcpRobot::EcpRobot(common::UiRobot& _ui_robot) :
 		END_EFFECTOR_STEP[j] = 0.0002;
 	}
 
+	END_EFFECTOR_LINEAR_STEP = 0.00002;
+	END_EFFECTOR_ANGULAR_STEP = 0.0002;
+
 	init();
 }
 

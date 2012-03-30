@@ -31,6 +31,9 @@ protected:
 	double JOINT_STEP[lib::MAX_SERVOS_NR]; // Przyrost kata obrotu w przegubie obrotowym [rad]
 	double END_EFFECTOR_STEP[lib::MAX_SERVOS_NR]; // Przyrost wspolrzednej polozenia koncowki [mm]
 
+	double END_EFFECTOR_LINEAR_STEP;
+	double END_EFFECTOR_ANGULAR_STEP;
+
 	double desired_position[lib::MAX_SERVOS_NR]; // polozenie zadane
 	double current_position[lib::MAX_SERVOS_NR]; // polozenie aktualne
 
@@ -75,6 +78,8 @@ public:
 
 	void move_htm_absolute(lib::Homog_matrix & desired_htm, lib::Homog_matrix & current_htm);
 	void move_htm_relative(lib::Homog_matrix & desired_htm);
+
+	int count_nr_of_steps(lib::Homog_matrix & increment_htm);
 
 	// Odczyt polozenia
 	void read_htm(lib::Homog_matrix & htm);
