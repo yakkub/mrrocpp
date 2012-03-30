@@ -363,62 +363,14 @@ void EcpRobot::move_xyz_euler_zyz(const double final_position[7])
 	// Zlecenie wykonania makrokroku ruchu zadanego we wspolrzednych
 	// zewnetrznych: xyz i katy Euler'a Z-Y-Z
 
-	int nr_of_steps = 0, nr_tmp = 0; // Liczba krokow
-	double temp = 0.0; // Zmienne pomocnicze
-
-	// Odczyt aktualnego polozenia we wsp. zewn. xyz i katy Euler'a Z-Y-Z
-	read_xyz_euler_zyz(current_position);
-
 	lib::Homog_matrix current_htm;
-	read_htm(current_htm);
-
 	lib::Homog_matrix desired_htm;
 	desired_htm.set_from_xyz_euler_zyz(lib::Xyz_Euler_Zyz_vector(final_position));
 
-	lib::Homog_matrix increment_htm;
-	increment_htm = (!current_htm) * desired_htm;
-
-	lib::Xyz_Angle_Axis_Gamma_vector increment_vector;
-	increment_htm.get_xyz_angle_axis_gamma(increment_vector);
-
-//	std::cout << "increment_vector :" << increment_vector << "\n\n";
-
-//	double increment_table[6]; // polozenie aktualne
-//	increment_vector.(increment_table);
-
-	int axis;
-
-	for (int j = 0; j < 4; j++) {
-		if (j == 3) {
-			axis = 6;
-		} else {
-			axis = j;
-		}
-		temp = fabs(increment_vector[axis]);
-		nr_tmp = (int) ceil(temp / END_EFFECTOR_STEP[j]);
-		nr_of_steps = (nr_of_steps > nr_tmp) ? nr_of_steps : nr_tmp;
-	}
-
-	// Parametry zlecenia ruchu i odczytu polozenia
-	ecp->ecp_command.instruction_type = lib::SET_GET;
-//	ecp->ecp_command.get_arm_type = lib::FRAME;
-	ecp->ecp_command.set_type = ARM_DEFINITION; // ARM
-	ecp->ecp_command.set_arm_type = lib::FRAME;
-	ecp->ecp_command.motion_type = lib::ABSOLUTE;
-	ecp->ecp_command.interpolation_type = lib::MIM;
-	ecp->ecp_command.motion_steps = nr_of_steps;
-	ecp->ecp_command.value_in_step_no = nr_of_steps;
-
-	// cprintf("eNOS=%u\n",ecp->ecp_command.motion_steps);
-	if (nr_of_steps < 1) // Nie wykowywac bo zadano ruch do aktualnej pozycji
-		return;
-
-	ecp->ecp_command.arm.pf_def.arm_frame = desired_htm;
-
-	execute_motion();
+	move_htm_absolute(desired_htm, current_htm);
 
 	lib::Xyz_Euler_Zyz_vector tmp_vector;
-	ecp->reply_package.arm.pf_def.arm_frame.get_xyz_euler_zyz(tmp_vector);
+	current_htm.get_xyz_euler_zyz(tmp_vector);
 	tmp_vector.to_table(current_position);
 
 }
@@ -518,11 +470,60 @@ void EcpRobot::read_xyz_euler_zyz(double current_position[])
 }
 // ---------------------------------------------------------------
 
-void move_htm_absolute(lib::Homog_matrix & desired_htm, lib::Homog_matrix & current_htm)
+void EcpRobot::move_htm_absolute(lib::Homog_matrix & desired_htm, lib::Homog_matrix & current_htm)
 {
+	int nr_of_steps = 0, nr_tmp = 0; // Liczba krokow
+	double temp = 0.0; // Zmienne pomocnicze
+
+	read_htm(current_htm);
+
+	lib::Homog_matrix increment_htm;
+	increment_htm = (!current_htm) * desired_htm;
+
+	lib::Xyz_Angle_Axis_Gamma_vector increment_vector;
+	increment_htm.get_xyz_angle_axis_gamma(increment_vector);
+
+//	std::cout << "increment_vector :" << increment_vector << "\n\n";
+
+//	double increment_table[6]; // polozenie aktualne
+//	increment_vector.(increment_table);
+
+	int axis;
+
+	for (int j = 0; j < 4; j++) {
+		if (j == 3) {
+			axis = 6;
+		} else {
+			axis = j;
+		}
+		temp = fabs(increment_vector[axis]);
+		nr_tmp = (int) ceil(temp / END_EFFECTOR_STEP[j]);
+		nr_of_steps = (nr_of_steps > nr_tmp) ? nr_of_steps : nr_tmp;
+	}
+
+	// Parametry zlecenia ruchu i odczytu polozenia
+	ecp->ecp_command.instruction_type = lib::SET_GET;
+//	ecp->ecp_command.get_arm_type = lib::FRAME;
+	ecp->ecp_command.set_type = ARM_DEFINITION; // ARM
+	ecp->ecp_command.set_arm_type = lib::FRAME;
+	ecp->ecp_command.motion_type = lib::ABSOLUTE;
+	ecp->ecp_command.interpolation_type = lib::MIM;
+	ecp->ecp_command.motion_steps = nr_of_steps;
+	ecp->ecp_command.value_in_step_no = nr_of_steps;
+
+	// cprintf("eNOS=%u\n",ecp->ecp_command.motion_steps);
+	if (nr_of_steps < 1) // Nie wykowywac bo zadano ruch do aktualnej pozycji
+		return;
+
+	ecp->ecp_command.arm.pf_def.arm_frame = desired_htm;
+
+	execute_motion();
+
+	current_htm = ecp->reply_package.arm.pf_def.arm_frame;
 
 }
-void move_htm_relative(lib::Homog_matrix & desired_htm)
+
+void EcpRobot::move_htm_relative(lib::Homog_matrix & desired_htm)
 {
 
 }
