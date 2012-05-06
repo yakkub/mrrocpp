@@ -32,12 +32,12 @@ eihgenerator::~eihgenerator()
 
 bool eihgenerator::first_step()
 {
-	sensor
+/*	sensor
 			= dynamic_cast <ecp_mp::sensor::fradia_sensor <lib::empty_t, chessboard_t, eihcalibration_t> *> (sensor_m[ecp_mp::sensor::SENSOR_FRADIA]);
 	if (sensor == NULL) {
 		throw std::logic_error("bool eihgenerator::first_step()");
 	}
-
+*/
 	//proste zadanie kinematyki
 	the_robot->ecp_command.instruction_type = lib::GET;
 	the_robot->ecp_command.get_type = ARM_DEFINITION;
@@ -54,13 +54,14 @@ bool eihgenerator::next_step()
 {
 	printf("bool eihgenerator::next_step()\n");
 	fflush( stdout);
-	if (sensor->get_reading_message().found == true)
+/*	if (sensor->get_reading_message().found == true)
 		count++;
 	get_frame();
 	eihcalibration_t command;
 	command.frame_number = count;
 	sensor->set_initiate_message(command);
 	//sensor->to_vsp.parameters.frame_number = count;
+*/
 	return false;
 }
 

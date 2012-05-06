@@ -6,15 +6,23 @@
 #include "robot/irp6ot_m/ecp_r_irp6ot_m.h"
 #include "robot/irp6p_m/ecp_r_irp6p_m.h"
 
+#include "sensor/discode/discode_sensor.h"
+#include <boost/shared_ptr.hpp>
+
 namespace mrrocpp {
 namespace ecp {
 namespace common {
 namespace task {
 
+using namespace mrrocpp::ecp_mp::sensor::discode;
+
 // KONSTRUKTORY
-axxb_eih::axxb_eih(lib::configurator &_config) :
+axxb_eih::axxb_eih(mrrocpp::lib::configurator &_config) :
 	calib_axxb(_config)
 {
+	char config_section_name[] = { "[vsp_discode_sensor]" };
+	sensor = boost::shared_ptr <discode_sensor>(new discode_sensor(_config, config_section_name));
+	sensor->configure_sensor();
 }
 
 void axxb_eih::main_task_algorithm(void)
@@ -29,7 +37,7 @@ void axxb_eih::main_task_algorithm(void)
 	//run a subtask to get the data if needed
 	if (config.value <int> ("acquire")) {
 		// TODO: acq_eih jest do poprawy, patrz konstruktor
-		sub_task::acq_eih* acq_task = new sub_task::acq_eih(*this);
+		sub_task::acq_eih* acq_task = new sub_task::acq_eih(*this, sensor);
 		acq_task->write_data(K_file_path, kk_file_path, M_file_path, mm_file_path, ofp.number_of_measures);
 		delete acq_task;
 	}

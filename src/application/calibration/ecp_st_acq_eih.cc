@@ -8,14 +8,22 @@
 #include "robot/irp6p_m/const_irp6p_m.h"
 
 #include "ecp_st_acq_eih.h"
+#include "sensor/discode/discode_sensor.h"
+
+#include <stdexcept>
+#include "base/lib/logger.h"
 
 namespace mrrocpp {
 namespace ecp {
 namespace common {
 namespace sub_task {
 
+using namespace logger;
+using namespace std;
+using namespace mrrocpp::ecp_mp::sensor::discode;
+
 //Constructors
-acq_eih::acq_eih(task::task &_ecp_t) :
+acq_eih::acq_eih(task::task &_ecp_t, boost::shared_ptr <discode_sensor> ds) :
 	acquisition(_ecp_t)
 {
 	printf("acq_eih::acq_eih() 1\n");
@@ -57,11 +65,7 @@ acq_eih::acq_eih(task::task &_ecp_t) :
 	fflush(stdout);
 	nose->eih_nose_run::configure_pulse_check(true);
 
-	fradia
-			= new ecp_mp::sensor::fradia_sensor <lib::empty_t, chessboard_t, eihcalibration_t>(_ecp_t.config, "[vsp_fradia_sensor]");
-	sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA] = fradia;
-
-	sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA]->configure_sensor();
+	sensor = ds;
 
 	generator = new generator::eihgenerator(_ecp_t);
 	generator->sensor_m = sub_task::ecp_t.sensor_m;
@@ -115,10 +119,11 @@ void acq_eih::main_task_algorithm(void)
 
 	//Czekam, az czujnik bedzie skonfigurowany.
 	//ecp_mp::sensor::fradia_sensor<chessboard_t,lib::empty_t> * fradia = dynamic_cast<ecp_mp::sensor::fradia_sensor<chessboard_t,lib::empty_t> *> (sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_CVFRADIA]);
-	fradia->get_reading();
+	/*fradia->get_reading();
 	while (fradia->get_report() == lib::sensor::VSP_SENSOR_NOT_CONFIGURED) {
 		fradia->get_reading();
-	}
+	}*/
+	retrieve_reading();
 
 	smoothgen->reset();
 	smoothgen->set_absolute();
@@ -128,14 +133,14 @@ void acq_eih::main_task_algorithm(void)
 	smoothgen->Move();
 
 	// doprowadzenie chwytaka do szachownicy "wodzeniem za nos"
-	/*
-	 while(fradia->get_reading_message().found == false){
-	 fradia->get_reading();
-	 nose->Move();
-	 generator->Move();
-	 store_data();
-	 }
-	 nose->Move();*/
+
+	while(is_object_visible_in_latest_reading() == false){
+		retrieve_reading();
+		nose->Move();
+		generator->Move();
+		store_data();
+	}
+	nose->Move();
 
 	sub_task::sr_ecp_msg.message("Data collection\n");
 
@@ -148,7 +153,7 @@ void acq_eih::main_task_algorithm(void)
 	//	std::cout<<sensor_m[ecp_mp::sensor::SENSOR_CVFRADIA]->from_vsp.comm_image.sensor_union.chessboard.found<<std::endl;
 
 	//opusc chwytak az przestanie "widziec" szachownice
-	while (fradia->get_reading_message().found == true && !calibrated) {
+	while (/*fradia->get_reading_message().found == true &&*/ !calibrated) {
 		//opuszczenie chwytaka o 2.5 cm
 		//smoothgen->load_coordinates(lib::ECP_XYZ_ANGLE_AXIS, vv, aa, 0.0, 0.0, A, 0.0, 0.0, 0.0, 0.0, 0.0, true);
 		smoothgen->reset();
@@ -161,7 +166,7 @@ void acq_eih::main_task_algorithm(void)
 		smoothgen->load_relative_angle_axis_trajectory_pose(coordinates);
 		smoothgen->Move();
 		nanosleep(&delay, NULL);
-		sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA]->get_reading();
+		//sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA]->get_reading();
 		generator->Move();
 		store_data();
 		++i;
@@ -181,7 +186,7 @@ void acq_eih::main_task_algorithm(void)
 	smoothgen->Move();
 	nanosleep(&delay, NULL);
 	--i;
-	sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA]->get_reading();
+	//sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA]->get_reading();
 
 	// zabezpieczenie przed przekroczeniem obszaru roboczego robota
 	bool flaga = true;
@@ -206,7 +211,7 @@ void acq_eih::main_task_algorithm(void)
 				e = -1.0 * E;
 			}
 
-			while (((fradia->get_reading_message().found) == true) && calibrated == false && m < M) {
+			while (/*((fradia->get_reading_message().found) == true) &&*/ calibrated == false && m < M) {
 				smoothgen->reset();
 				coordinates[0] = 0.0;
 				coordinates[1] = 0.0;
@@ -221,7 +226,7 @@ void acq_eih::main_task_algorithm(void)
 				generator->Move();
 				store_data();
 				++m;
-				sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA]->get_reading();
+				//sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_FRADIA]->get_reading();
 			}
 
 			if (m != 0) {
@@ -240,7 +245,7 @@ void acq_eih::main_task_algorithm(void)
 				smoothgen->Move();
 				m = 0;
 				nanosleep(&delay, NULL);
-				fradia->get_reading();
+				//fradia->get_reading();
 			}
 		}
 
@@ -269,7 +274,7 @@ void acq_eih::main_task_algorithm(void)
 				b = -1.0 * A;
 			}
 
-			while (fradia->get_reading_message().found == true && calibrated == false && flaga) {
+			while (/*fradia->get_reading_message().found == true &&*/ calibrated == false && flaga) {
 				smoothgen->reset();
 				coordinates[0] = a;
 				coordinates[1] = b;
@@ -284,7 +289,7 @@ void acq_eih::main_task_algorithm(void)
 				generator->Move();
 				store_data();
 				++j;
-				fradia->get_reading();
+				//fradia->get_reading();
 
 				for (l = 0; l < 6; l += 1) {
 					c = 0.0;
@@ -310,7 +315,7 @@ void acq_eih::main_task_algorithm(void)
 							|| (i == 3 && j == 3)))
 						/*start1 a>0 c>0 ot i p*/flaga = false;
 
-					while (((fradia->get_reading_message().found) == true) && (calibrated == false) && m < M && flaga) {
+					while (/*((fradia->get_reading_message().found) == true) &&*/ (calibrated == false) && m < M && flaga) {
 						smoothgen->reset();
 						coordinates[0] = 0.0;
 						coordinates[1] = 0.0;
@@ -325,7 +330,7 @@ void acq_eih::main_task_algorithm(void)
 						generator->Move();
 						store_data();
 						++m;
-						fradia->get_reading();
+						//fradia->get_reading();
 					}
 
 					flaga = true;
@@ -344,7 +349,7 @@ void acq_eih::main_task_algorithm(void)
 						smoothgen->Move();
 						m = 0;
 						nanosleep(&delay, NULL);
-						fradia->get_reading();
+						//fradia->get_reading();
 					}
 				}
 				// zabezpieczenie przed przekroczeniem obszaru roboczego robota
@@ -369,7 +374,7 @@ void acq_eih::main_task_algorithm(void)
 				smoothgen->Move();
 				j = 0;
 				nanosleep(&delay, NULL);
-				fradia->get_reading();
+				//fradia->get_reading();
 			}
 		}
 
@@ -385,7 +390,7 @@ void acq_eih::main_task_algorithm(void)
 		//smoothgen->load_coordinates(lib::ECP_XYZ_ANGLE_AXIS, vv, aa, 0.0, 0.0, -1.0 * A, 0.0, 0.0, 0.0, 0.0, 0.0, true);
 		smoothgen->Move();
 		nanosleep(&delay, NULL);
-		fradia->get_reading();
+		//fradia->get_reading();
 		--i;
 	}
 	if (calibrated) {
@@ -415,20 +420,20 @@ bool acq_eih::store_data(void)
 
 	//ecp_mp::sensor::fradia_sensor<chessboard_t,lib::empty_t> * fradia = dynamic_cast<ecp_mp::sensor::fradia_sensor<chessboard_t,lib::empty_t> *> (sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_CVFRADIA]);
 
-	if (fradia->get_reading_message().found == true && !calibrated) {
+	if (/*fradia->get_reading_message().found == true && */!calibrated) {
 		for (i = 0; i < 12; ++i) {
 			// store translation vector received from robot
 			if (i % 4 == 3) {
 				// translation vector
 				gsl_vector_set(ofp.k, 3 * generator->count + j, generator->tab[i]);
-				gsl_vector_set(ofp.m, 3 * generator->count + j, fradia->get_reading_message().transformation_matrix[i]);
+				gsl_vector_set(ofp.m, 3 * generator->count + j, 0.0/*fradia->get_reading_message().transformation_matrix[i]*/);
 				++j;
 			}
 			// store rotation matrix received from robot
 			else {
 				// rotation matrix
 				gsl_matrix_set(ofp.K, 3 * generator->count + j, i % 4, generator->tab[i]);
-				gsl_matrix_set(ofp.M, 3 * generator->count + j, i % 4, fradia->get_reading_message().transformation_matrix[i]);
+				gsl_matrix_set(ofp.M, 3 * generator->count + j, i % 4, 0.0/*fradia->get_reading_message().transformation_matrix[i]*/);
 			}
 		}
 	}
@@ -437,6 +442,27 @@ bool acq_eih::store_data(void)
 
 	//std::cout<<"pomiar "<<generator->count<<std::endl;
 	return true;
+}
+
+Types::Mrrocpp_Proxy::EIHReading* acq_eih::get_reading()
+{
+	return &reading;
+}
+
+bool acq_eih::is_object_visible_in_latest_reading()
+{
+	return reading.objectVisible;
+}
+
+void acq_eih::retrieve_reading()
+{
+	try {
+		if (sensor->get_state() == discode_sensor::DSS_READING_RECEIVED) {
+			reading = sensor->retreive_reading <Types::Mrrocpp_Proxy::EIHReading> ();
+		}
+	} catch (exception &ex) {
+		log("acw_st_acq_eih::retrieve_reading(): %s\n", ex.what());
+	}
 }
 
 void acq_eih::write_data(const std::string & _K_fp, const std::string & _kk_fp, const std::string & _M_fp, const std::string & _mm_fp, int _number_of_measures)

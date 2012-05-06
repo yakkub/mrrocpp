@@ -12,6 +12,10 @@
 #include "base/lib/impconst.h"
 #include "base/lib/com_buf.h"
 
+#include <boost/shared_ptr.hpp>
+#include "sensor/discode/discode_sensor.h"
+#include "EIHReading.h"
+
 #include "robot/irp6ot_m/ecp_r_irp6ot_m.h"
 #include "robot/irp6p_m/ecp_r_irp6p_m.h"
 #include "base/ecp/ecp_sub_task.h"
@@ -31,6 +35,8 @@ namespace mrrocpp {
 namespace ecp {
 namespace common {
 namespace sub_task {
+
+using namespace mrrocpp::ecp_mp::sensor::discode;
 
 class acq_eih : public acquisition
 {
@@ -53,7 +59,8 @@ private:
 		int number_of_measures;
 	} ofp;
 
-	ecp_mp::sensor::fradia_sensor <lib::empty_t, chessboard_t, eihcalibration_t> *fradia;
+	//ecp_mp::sensor::fradia_sensor <lib::empty_t, chessboard_t, eihcalibration_t> *fradia;
+	boost::shared_ptr <mrrocpp::ecp_mp::sensor::discode::discode_sensor> sensor;
 protected:
 	std::string K_fp;
 	std::string kk_fp;
@@ -69,12 +76,17 @@ protected:
 	bool store_data(void);
 	void main_task_algorithm(void);
 
+	Types::Mrrocpp_Proxy::EIHReading reading;
+
+	virtual void retrieve_reading();
+	virtual bool is_object_visible_in_latest_reading();
+
 public:
+	virtual Types::Mrrocpp_Proxy::EIHReading* get_reading();
 
 	void conditional_execution();
-	acq_eih(task::task &_ecp_t);
-	void
-			write_data(const std::string & _K_fp, const std::string & _k_fp, const std::string & _M_fp, const std::string & _m_fp, int _number_of_measures);
+	acq_eih(task::task &_ecp_t, boost::shared_ptr <mrrocpp::ecp_mp::sensor::discode::discode_sensor> sensor);
+	void write_data(const std::string & _K_fp, const std::string & _k_fp, const std::string & _M_fp, const std::string & _m_fp, int _number_of_measures);
 };
 
 }

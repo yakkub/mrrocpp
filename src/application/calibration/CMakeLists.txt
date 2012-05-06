@@ -34,6 +34,20 @@ add_executable(ecp_t_axzb_force
 	ecp_g_pcbird_nose_run.cc
 )
 
+target_link_libraries(ecp_t_axzb_eih
+	ecp_r_irp6p_m
+	ecp_r_irp6ot_m
+	discode_sensor
+	ecp ${COMMON_LIBRARIES}
+)
+
+target_link_libraries(ecp_t_axxb_eih
+	ecp_r_irp6p_m
+	ecp_r_irp6ot_m
+	discode_sensor
+	ecp ${COMMON_LIBRARIES}
+)
+
 target_link_libraries(ecp_t_axzb_force pcbird_sensor)
 
 add_executable(ecp_t_kcz_test
@@ -47,6 +61,7 @@ FOREACH(executable ${EXECUTABLES})
 	target_link_libraries(${executable}
 		ecp_r_irp6ot_m ecp_r_irp6p_m
 		ecp_generators
+		ecp ${COMMON_LIBRARIES}
 		${GSL_LIBRARIES}
 	)
 ENDFOREACH(executable)
