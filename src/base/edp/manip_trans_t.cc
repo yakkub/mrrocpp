@@ -85,7 +85,7 @@ void manip_trans_t::operator()()
 					master.move_arm(current_cmd.instruction); // wariant dla watku edp_trans_t
 				//	error_existed = 0;
 					break;
-				default: // blad: z reply_type wynika, e odpowied nie ma zawiera narzedzia
+				default: // blad: z reply_type wynika, ze odpowied nie ma zawiera narzedzia
 					//dodac rzucanie wyjatku
 					break;
 			}
@@ -103,12 +103,13 @@ void manip_trans_t::operator()()
 				// zostanei wyslany wyjatek z drugiej fazy move_arm
 				master_to_trans_synchroniser.wait();
 				error = boost::current_exception();
-
+				trans_t_to_master_synchroniser.command();
 				printf("transformation thread error sp\n");
 				flushall();
 
 			} else {
 				error = boost::current_exception();
+				trans_t_to_master_synchroniser.command();
 				error_existed++;
 				if (error_existed <= 3) {
 					printf("transformation thread error pp: %d\n", error_existed);
@@ -116,7 +117,7 @@ void manip_trans_t::operator()()
 				}
 			}
 
-			trans_t_to_master_synchroniser.command();
+	//		trans_t_to_master_synchroniser.command();
 			// Wylapywanie niezdefiniowanych bledow
 			// printf("zlapane cos");// by Y&W
 		}
