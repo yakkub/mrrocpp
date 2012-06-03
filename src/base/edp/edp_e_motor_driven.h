@@ -3,7 +3,6 @@
  * \brief File containing the declaration of edp::common::motor_driven_effector class.
  *
  * \author yoyek
- * \date 2009
  *
  */
 
@@ -20,13 +19,9 @@
 #include "base/kinematics/kinematics_manager.h"
 #include "base/edp/in_out.h"
 #include "base/edp/edp_effector.h"
+#include "base/lib/exception.h"
 
-//#ifdef DOCENT_SENSOR
 #include <boost/function.hpp>
-//#endif
-
-
-static const float VELOCITY_LIMIT_GLOBAL_FACTOR_DEFAULT = 0.2;
 
 namespace mrrocpp {
 namespace edp {
@@ -35,6 +30,8 @@ class force;
 }
 namespace common {
 
+static const float VELOCITY_LIMIT_GLOBAL_FACTOR_DEFAULT = 0.2;
+
 // TODO: remove forward declarations
 class servo_buffer;
 class edp_vsp;
@@ -42,18 +39,13 @@ class manip_trans_t;
 class reader_buffer;
 class vis_server;
 
-enum STATE
-{
-	GET_STATE, GET_SYNCHRO, SYNCHRO_TERMINATED, GET_INSTRUCTION, EXECUTE_INSTRUCTION, WAIT, WAIT_Q
-};
-
 /*!
  * \class motor_driven_effector
  * \brief Base class of all EDP effectors using motors (e.g. robots)
  *
- * The class can be treated as multi variant shield. The derrived classes can optionally use servo_buffer (dedicated servo thread)
+ * The class can be treated as multi variant shield. The derived classes can optionally use servo_buffer (dedicated servo thread)
  * reader_buffer - dedicated reader thread, mt_tt_obj - dedicated thread to interpolate in task coordinates, e.g. force control in manipulators
- * vis_server - dedicated thread to sent joint position e.g. to visualisation processes,
+ * vis_server - dedicated thread to sent joint position e.g. to visualization processes,
  * sensor::force -- dedicated thread to measure force for the purpose of position force control of robotics manipulator
  * edp_vsp_obj - thread to sent data to VSP process (when the force sensor is used both as the prioceptor and exteroceptor)
  * *
@@ -61,6 +53,30 @@ enum STATE
  */
 class motor_driven_effector : public effector, public kinematics::common::kinematics_manager
 {
+private:
+	enum STATE
+	{
+		GET_STATE, GET_SYNCHRO, SYNCHRO_TERMINATED, GET_INSTRUCTION, EXECUTE_INSTRUCTION, WAIT, WAIT_Q
+	};
+
+	/*!
+	 * \brief (GOF) Good old-fashioned mrroc++ non fatal error 1.
+	 * \author yoyek
+	 */
+	REGISTER_NON_FATAL_ERROR(nfe_1, "Non fatal error - type 1")
+
+	/*!
+	 * \brief (GOF) Good old-fashioned mrroc++ non fatal error 3.
+	 * \author yoyek
+	 */
+	REGISTER_NON_FATAL_ERROR(nfe_3, "Non fatal error - type 3")
+
+	/*!
+	 * \brief (GOF) Good old-fashioned mrroc++ non fatal error 4.
+	 * \author yoyek
+	 */
+	REGISTER_NON_FATAL_ERROR(nfe_4, "Non fatal error - type 4")
+
 protected:
 	/*!
 	 * \brief The number of steps in the macrostep.
@@ -76,13 +92,11 @@ protected:
 	 */
 	uint16_t value_in_step_no;
 
-	//#ifdef DOCENT_SENSOR
+	// TODO comment it
 	boost::function <void()> startedCallback_;
 	bool startedCallbackRegistered_;
 	boost::function <void()> stoppedCallback_;
 	bool stoppedCallbackRegistered_;
-	//#endif
-
 
 	/*!
 	 * \brief friend class of servo thread to handle the motion controllers
@@ -197,12 +211,12 @@ public:
 	 * It is used for the purpose of the visualisation thread
 	 */
 	void master_joints_read(double[]);
-	//#ifdef DOCENT_SENSOR
+
+	// TODO comment it
 	void registerReaderStartedCallback(boost::function <void()> startedCallback);
 	void registerReaderStoppedCallback(boost::function <void()> stoppedCallback);
 	void onReaderStarted();
 	void onReaderStopped();
-	//#endif
 
 	/*!
 	 * \brief The velocity limit global factor
@@ -264,7 +278,7 @@ public:
 	 *
 	 * The attributes are initialized here.
 	 */
-	motor_driven_effector(shell &_shell, lib::robot_name_t l_robot_name);
+	motor_driven_effector(shell &_shell, const lib::robot_name_t & l_robot_name, lib::c_buffer & c_buffer_ref, lib::r_buffer & r_buffer_ref);
 
 	/*!
 	 * \brief class destructor
@@ -493,8 +507,36 @@ public:
 	 */
 	void single_thread_master_order(common::MT_ORDER nm_task, int nm_tryb);
 
-	lib::c_buffer instruction;
-	lib::r_buffer reply;
+	/*!
+	 * \brief method to receive instruction from ecp of particular type
+	 *
+	 * It is reimplemented in derived classes to call the template class specialized with particular class type
+	 */
+	virtual lib::INSTRUCTION_TYPE receive_instruction();
+
+	/*!
+	 * \brief method to reply to ecp with class of particular type
+	 *
+	 * It is reimplemented in derived classes to call the template class specialized with particular class type
+	 */
+	virtual void variant_reply_to_instruction();
+
+	/*!
+	 * \brief Reference to base types of instruction
+	 *
+	 * The particular type is the field of derived classes
+	 */
+	lib::c_buffer & instruction;
+
+	/*!
+	 * \brief Reference to base types of reply
+	 *
+	 * The particular type is the field of derived classes
+	 */
+	lib::r_buffer & reply;
+
+	// for the force variant of move arm and transformation thread error handling
+	bool move_arm_second_phase;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

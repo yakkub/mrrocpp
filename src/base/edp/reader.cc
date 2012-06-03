@@ -1,6 +1,5 @@
 //
 // READER - watek do buforowania danych pomiarowych i ich zapisu do pliku
-// Date: maj 2006
 //
 
 #include <cstdio>
@@ -18,8 +17,9 @@
 
 #include "base/lib/messip/messip_dataport.h"
 
+#include <boost/circular_buffer.hpp>
+
 #include <cerrno>
-#include <pthread.h>
 #include <ctime>
 
 #include <boost/scoped_array.hpp>
@@ -45,6 +45,7 @@ reader_config::reader_config() :
 		uchyb[i] = false;
 		abs_pos[i] = false;
 		current_joints[i] = false;
+                desired_joints[i] = false;
 	}
 
 	for (int i = 0; i < 6; ++i) {
@@ -127,6 +128,9 @@ void reader_buffer::operator()()
 		sprintf(tmp_string, "current_joints_%d", j);
 		reader_cnf.current_joints[j] = master.config.check_config(tmp_string);
 
+                sprintf(tmp_string, "desired_joints_%d", j);
+                reader_cnf.desired_joints[j] = master.config.check_config(tmp_string);
+
 		sprintf(tmp_string, "measured_current_%d", j);
 		reader_cnf.measured_current[j] = master.config.check_config(tmp_string);
 
@@ -155,9 +159,11 @@ void reader_buffer::operator()()
 	}
 
 	// ustawienie priorytetu watku
-	lib::set_thread_priority(pthread_self(), lib::PTHREAD_MIN_PRIORITY);
+	if(!master.robot_test_mode) {
+		lib::set_thread_priority(lib::PTHREAD_MIN_PRIORITY);
+	}
 
-	// NOTE: readed buffer has to be allocated on heap (using "new" operator) due to huge size
+	// NOTE: reader buffer has to be allocated on heap (using "new" operator) due to huge size
 	// boost::scoped_array takes care of deallocating in case of exception
 	boost::circular_buffer <reader_data> reader_buf(nr_of_samples);
 
@@ -179,10 +185,9 @@ void reader_buffer::operator()()
 	for (;;) {
 		// TODO: why, Leo? Why?
 		// ustawienie priorytetu watku
-		lib::set_thread_priority(pthread_self(), lib::PTHREAD_MIN_PRIORITY);
-
-		// ustawienie priorytetu watku
-//		lib::set_thread_priority(pthread_self(), lib::QNX_MAX_PRIORITY - 10);
+		if(!master.robot_test_mode) {
+			lib::set_thread_priority(lib::PTHREAD_MIN_PRIORITY);
+		}
 
 		start = false; // okresla czy odebrano juz puls rozpoczecia pomiarow
 
@@ -204,7 +209,9 @@ void reader_buffer::operator()()
 		master.msg->message("measures started");
 
 		// TODO: why, Leo? Why?
-		lib::set_thread_priority(pthread_self(), lib::PTHREAD_MAX_PRIORITY);
+		if(!master.robot_test_mode) {
+			lib::set_thread_priority(lib::PTHREAD_MAX_PRIORITY);
+		}
 
 		// dopoki nie przyjdzie puls stopu
 		do {
@@ -247,7 +254,9 @@ void reader_buffer::operator()()
 
 		} while (!stop); // dopoki nie przyjdzie puls stopu
 
-		lib::set_thread_priority(pthread_self(), lib::PTHREAD_MIN_PRIORITY);// Najnizszy priorytet podczas proby zapisu do pliku
+		if(!master.robot_test_mode) {
+			lib::set_thread_priority(lib::PTHREAD_MIN_PRIORITY);// Najnizszy priorytet podczas proby zapisu do pliku
+		}
 		master.msg->message("measures stopped");
 
 		// przygotowanie nazwy pliku do ktorego beda zapisane pomiary
@@ -333,6 +342,11 @@ void reader_buffer::write_data_old_format(std::ofstream& outfile, const reader_d
 			outfile << data.current_joints[j] << " ";
 	}
 
+        for (int j = 0; j < master.number_of_servos; j++) {
+                if (reader_cnf.desired_joints[j])
+                        outfile << data.desired_joints[j] << " ";
+        }
+
 	outfile << "f: ";
 
 	for (int j = 0; j < 6; j++) {
@@ -391,8 +405,8 @@ void reader_buffer::write_header_csv(std::ofstream& outfile)
 			outfile << "current_inc[" << j << "];";
 		if (reader_cnf.measured_current[j])
 			outfile << "measured_current[" << j << "];";
-		if (reader_cnf.pwm[j])
-			outfile << "pwm[" << j << "];";
+//		if (reader_cnf.pwm[j])
+//			outfile << "pwm[" << j << "];";
 		if (reader_cnf.uchyb[j])
 			outfile << "uchyb[" << j << "];";
 		if (reader_cnf.abs_pos[j])
@@ -403,6 +417,16 @@ void reader_buffer::write_header_csv(std::ofstream& outfile)
 		if (reader_cnf.current_joints[j])
 			outfile << "current_joints[" << j << "];";
 	}
+
+        for (int j = 0; j < master.number_of_servos; j++) {
+                if (reader_cnf.desired_joints[j])
+                        outfile << "desired_joints[" << j << "];";
+        }
+
+        for (int j = 0; j < master.number_of_servos; j++) {
+                if (reader_cnf.pwm[j])
+                        outfile << "pwm[" << j << "];";
+        }
 
 	for (int j = 0; j < 6; j++) {
 		if (reader_cnf.force[j])
@@ -450,8 +474,8 @@ void reader_buffer::write_data_csv(std::ofstream& outfile, const reader_data & d
 			outfile << data.current_inc[j] << ";";
 		if (reader_cnf.measured_current[j])
 			outfile << data.measured_current[j] << ";";
-		if (reader_cnf.pwm[j])
-			outfile << data.pwm[j] << ";";
+                //if (reader_cnf.pwm[j])
+                //	outfile << data.pwm[j] << ";";
 		if (reader_cnf.uchyb[j])
 			outfile << data.uchyb[j] << ";";
 		if (reader_cnf.abs_pos[j])
@@ -462,6 +486,16 @@ void reader_buffer::write_data_csv(std::ofstream& outfile, const reader_data & d
 		if (reader_cnf.current_joints[j])
 			outfile << data.current_joints[j] << ";";
 	}
+
+        for (int j = 0; j < master.number_of_servos; j++) {
+                if (reader_cnf.desired_joints[j])
+                        outfile << data.desired_joints[j] << ";";
+        }
+
+        for (int j = 0; j < master.number_of_servos; j++) {
+            if (reader_cnf.pwm[j])
+                    outfile << data.pwm[j] << ";";
+        }
 
 	for (int j = 0; j < 6; j++) {
 		if (reader_cnf.force[j])
