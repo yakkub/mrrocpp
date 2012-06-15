@@ -17,8 +17,9 @@
 
 #include "base/lib/condition_synchroniser.h"
 #include "base/kinematics/kinematics_manager.h"
-#include "base/edp/in_out.h"
-#include "base/edp/edp_effector.h"
+#include "in_out.h"
+#include "edp_effector.h"
+#include "edp_dp.h"
 #include "base/lib/exception.h"
 
 #include <boost/function.hpp>
