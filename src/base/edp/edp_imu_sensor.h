@@ -35,11 +35,32 @@ namespace sensor {
 class imu : public lib::sensor::sensor_interface
 {
 protected:
+	/*!
+	 * \brief Info if the imu sensor test mode is active.
+	 *
+	 * It is taken from configuration data.
+	 */
+	bool imu_sensor_test_mode;
+
 	common::manip_effector &master;
 
+	virtual void connect_to_hardware(void) = 0;
+	virtual void disconnect_from_hardware(void) = 0;
+
+	// particular force sensor configuration
+	virtual void configure_particular_sensor(void) = 0;
+
+	// particular force sensor get reading
+	virtual void get_particular_reading(void) = 0;
+
+	virtual void wait_for_particular_event(void) = 0; // oczekiwanie na zdarzenie
+
 	void get_reading(void);
+	void wait_for_event(void); // oczekiwanie na zdarzenie
 
 public:
+
+	lib::condition_synchroniser thread_started;
 	//! komunikacja z SR
 	boost::shared_ptr <lib::sr_vsp> sr_msg;
 

@@ -66,7 +66,7 @@ void effector::create_threads()
 
 	imu_sen = (boost::shared_ptr <sensor::imu>) sensor::return_created_edp_imu_sensor(*this);
 	imu_tid = boost::thread(boost::bind(&sensor::imu::operator(), imu_sen));
-
+	imu_sen->thread_started.wait();
 	motor_driven_effector::hi_create_threads();
 }
 

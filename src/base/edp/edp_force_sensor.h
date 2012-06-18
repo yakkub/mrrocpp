@@ -84,13 +84,15 @@ protected:
 	virtual void connect_to_hardware(void) = 0;
 	virtual void disconnect_from_hardware(void) = 0;
 
-	void configure_sensor(void);
-
 	// particular force sensor configuration
 	virtual void configure_particular_sensor(void) = 0;
 
 	// particular force sensor get reading
 	virtual void get_particular_reading(void) = 0;
+
+	virtual void wait_for_particular_event(void) = 0; // oczekiwanie na zdarzenie
+
+	void configure_sensor(void);
 
 	// ft_table used in get_reading and get_particualr_reading
 	lib::Ft_vector ft_table;
@@ -143,7 +145,6 @@ public:
 	virtual ~force();
 
 	void wait_for_event(void); // oczekiwanie na zdarzenie
-	virtual void wait_for_particular_event(void) = 0; // oczekiwanie na zdarzenie
 
 	void set_force_tool(void);
 };
