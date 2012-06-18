@@ -12,8 +12,8 @@ namespace mrrocpp {
 namespace edp {
 namespace sensor {
 
-//!< watek do komunikacji ze sprzetem
 void force::operator()()
+//!< watek do komunikacji ze sprzetem
 {
 	//	sr_msg->message("operator");
 
