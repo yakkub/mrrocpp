@@ -268,13 +268,6 @@ public:
 	boost::shared_ptr <vis_server> vis_obj;
 
 	/*!
-	 * \brief force object to collect force measurements.
-	 *
-	 * The force measurements are collected in dedicated thread. Then the influence of gravitational force is removed in the same thread.
-	 */
-	boost::shared_ptr <sensor::force> vs;
-
-	/*!
 	 * \brief class constructor
 	 *
 	 * The attributes are initialized here.

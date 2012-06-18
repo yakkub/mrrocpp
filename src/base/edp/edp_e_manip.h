@@ -14,6 +14,7 @@ namespace mrrocpp {
 namespace edp {
 namespace sensor {
 class force;
+class imu;
 }
 namespace common {
 
@@ -123,8 +124,16 @@ public:
 	 */
 	void pose_force_torque_at_frame_move(const lib::c_buffer &instruction);
 
+	/*!
+	 * \brief force object to collect force measurements.
+	 *
+	 * The force measurements are collected in dedicated thread. Then the influence of gravitational force is removed in the same thread.
+	 */
+	boost::shared_ptr <sensor::force> vs;
+
 	edp_dp <lib::Ft_vector> force_dp;
 
+	boost::shared_ptr <sensor::imu> imu_sen;
 
 	/*!
 	 * \brief method that computes servo_current_frame_wo_tool
