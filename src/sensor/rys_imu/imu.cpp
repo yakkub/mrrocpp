@@ -72,7 +72,9 @@ ImuData IMU::getReading() {
 		if (c != '#')
 			buf += c;
 	}
-	
+
+	tcflush(fd, TCIFLUSH);
+
 	std::vector<std::string> strs;
 	boost::split(strs, buf, boost::is_any_of(","));
 	

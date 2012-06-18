@@ -12,7 +12,7 @@
 #include <string>
 #include <fstream>
 
-#include "imudata.hpp" 
+#include "base/lib/imudata.hpp"
 
 class IMU {
 public:

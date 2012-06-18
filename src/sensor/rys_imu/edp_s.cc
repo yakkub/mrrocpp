@@ -58,13 +58,13 @@ void rys_imu::configure_particular_sensor(void)
 
 void rys_imu::wait_for_particular_event()
 {
-	usleep(14000);
+	usleep(12000);
 }
 
 void rys_imu::get_particular_reading(void)
 {
 	static int i = 1;
-	ImuData ldata;
+
 	ldata = ri->getReading();
 
 	if (((i++) % 1000) == 0) {

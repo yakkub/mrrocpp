@@ -112,6 +112,17 @@ void imu::get_reading(void)
 
 	}
 
+	if (master.rb_obj) {
+		boost::mutex::scoped_lock lock(master.rb_obj->reader_mutex);
+		master.rb_obj->step_data.real_cartesian_acc[0] = ldata.linearAcceleration[0];
+		master.rb_obj->step_data.real_cartesian_acc[1] = ldata.linearAcceleration[1];
+		master.rb_obj->step_data.real_cartesian_acc[2] = ldata.linearAcceleration[2];
+		master.rb_obj->step_data.real_cartesian_vel[3] = ldata.angularVelocity[0];
+		master.rb_obj->step_data.real_cartesian_vel[4] = ldata.angularVelocity[1];
+		master.rb_obj->step_data.real_cartesian_vel[5] = ldata.angularVelocity[2];
+
+	}
+
 }
 
 } // namespace sensor

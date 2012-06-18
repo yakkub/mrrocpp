@@ -19,22 +19,22 @@
 #include "base/edp/edp_typedefs.h"				// klasa bazowa sensor
 #include "base/lib/condition_synchroniser.h"
 #include "base/lib/sr/sr_vsp.h"
+#include "base/lib/imudata.hpp"
 
 namespace mrrocpp {
 namespace edp {
 namespace common {
 class manip_effector;
 
-
 }
 
 namespace sensor {
-
 
 /********** klasa czujnikow po stronie EDP **************/
 class imu : public lib::sensor::sensor_interface
 {
 protected:
+	ImuData ldata;
 	/*!
 	 * \brief Info if the imu sensor test mode is active.
 	 *
