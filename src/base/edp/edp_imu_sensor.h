@@ -40,6 +40,9 @@ protected:
 	void get_reading(void);
 
 public:
+	//! komunikacja z SR
+	boost::shared_ptr <lib::sr_vsp> sr_msg;
+
 	void operator()();
 
 	imu(common::manip_effector &_master);

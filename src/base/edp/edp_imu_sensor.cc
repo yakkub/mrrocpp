@@ -14,19 +14,25 @@ namespace sensor {
 
 void imu::operator()()
 {
-	while (1) {
-		sleep(10);
+	while (!boost::this_thread::interruption_requested()) {
+		delay(10);
+	//	sr_msg->message("imu operator() in while");
 	}
+	sr_msg->message("imu operator() interruption_requested");
 }
 
 imu::imu(common::manip_effector &_master) :
 		master(_master)
 {
+	sr_msg =
+			boost::shared_ptr <lib::sr_vsp>(new lib::sr_vsp(lib::EDP, "i_" + master.config.robot_name, master.config.get_sr_attach_point()));
 
+	sr_msg->message("imu constructor");
 }
 
 imu::~imu()
 {
+	sr_msg->message("~imu destructor");
 }
 
 /***************************** odczyt z czujnika *****************************/
