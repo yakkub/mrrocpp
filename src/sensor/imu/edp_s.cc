@@ -58,14 +58,20 @@ void rys_imu::configure_particular_sensor(void)
 
 void rys_imu::wait_for_particular_event()
 {
-	usleep(1000);
+	usleep(14000);
 }
 
 void rys_imu::get_particular_reading(void)
 {
+	static int i = 1;
 	ImuData ldata;
-//	ldata = ri->getReading();
-	std::cout << "Ang:\n" << ldata.angularVelocity << "\nLin:\n" << ldata.linearAcceleration << "\n";
+	ldata = ri->getReading();
+
+	if (((i++) % 1000) == 0) {
+		std::cout << i << std::endl;
+	}
+
+//	std::cout << "Ang:\n" << ldata.angularVelocity << "\nLin:\n" << ldata.linearAcceleration << "\n";
 }
 
 imu* return_created_edp_imu_sensor(common::manip_effector &_master)
