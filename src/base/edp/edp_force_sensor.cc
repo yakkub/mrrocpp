@@ -112,7 +112,7 @@ void force::operator()()
 
 						current_force_torque.to_table(master.rb_obj->step_data.force);
 					} else {
-						std::cerr << " " << std::endl;
+						//	std::cerr << " " << std::endl;
 					}
 				}
 				first_measure_synchroniser.command();

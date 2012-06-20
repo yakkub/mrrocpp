@@ -24,7 +24,7 @@ void imu::operator()()
 		}
 
 		thread_started.command();
-
+		//	first_measure_synchroniser.command();
 	}
 
 	catch (lib::exception::se_sensor & error) {
@@ -63,6 +63,7 @@ void imu::operator()()
 
 		try {
 			if (new_edp_command) {
+				//sr_msg->message("new_edp_command");
 				boost::mutex::scoped_lock lock(mtx);
 				// TODO: this should be handled with boost::bind functor parameter
 				switch (command)
@@ -76,10 +77,11 @@ void imu::operator()()
 				set_command_execution_finish();
 			} else {
 
-				//	sr_msg->message("else 12");
+				//sr_msg->message("else");
 				wait_for_event();
-
+				//	sr_msg->message("za wait_for_event");
 				get_reading();
+				//	sr_msg->message("za get_reading");
 				first_measure_synchroniser.command();
 			}
 
