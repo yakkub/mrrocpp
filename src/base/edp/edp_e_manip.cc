@@ -11,11 +11,12 @@
 #include "base/lib/impconst.h"
 #include "base/lib/com_buf.h"
 #include "base/lib/mrmath/mrmath.h"
-#include "base/edp/servo_gr.h"
-#include "base/edp/reader.h"
-#include "base/edp/manip_trans_t.h"
-#include "base/edp/edp_e_manip.h"
-#include "base/edp/edp_force_sensor.h"
+#include "servo_gr.h"
+#include "reader.h"
+#include "manip_trans_t.h"
+#include "edp_e_manip.h"
+#include "edp_force_sensor.h"
+#include "edp_imu_sensor.h"
 #include "base/kinematics/kinematic_model_with_tool.h"
 
 namespace mrrocpp {
@@ -25,6 +26,7 @@ namespace common {
 bool manip_effector::compute_servo_joints_and_frame(void)
 {
 	static bool force_sensor_post_synchro_configuration = false;
+	static bool imu_sensor_post_synchro_configuration = false;
 
 	if (!(motor_driven_effector::compute_servo_joints_and_frame())) {
 		return false;
@@ -74,12 +76,23 @@ bool manip_effector::compute_servo_joints_and_frame(void)
 		// Obliczenie polozenia robota we wsp. zewnetrznych bez narzedzia.
 		((mrrocpp::kinematics::common::kinematic_model_with_tool*) get_current_kinematic_model())->i2e_wo_tool_transform(servo_current_joints, servo_current_frame_wo_tool);
 
+		// force_sensor configuration
 		if (vs != NULL) {
 			boost::mutex::scoped_lock lock(vs->mtx);
 			if ((is_synchronised()) && (!(force_sensor_post_synchro_configuration))) {
 				force_sensor_post_synchro_configuration = true;
 				vs->new_edp_command = true;
 				vs->command = FORCE_CONFIGURE;
+			}
+		}
+
+		// imu_sensor configuration
+		if (imu_sen != NULL) {
+			boost::mutex::scoped_lock lock(imu_sen->mtx);
+			if ((is_synchronised()) && (!(imu_sensor_post_synchro_configuration))) {
+				imu_sensor_post_synchro_configuration = true;
+				imu_sen->new_edp_command = true;
+				imu_sen->command = IMU_CONFIGURE;
 			}
 		}
 

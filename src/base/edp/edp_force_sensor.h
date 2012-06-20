@@ -121,8 +121,7 @@ public:
 	//! komunikacja z SR
 	boost::shared_ptr <lib::sr_vsp> sr_msg;
 
-	//! dostep do nowej wiadomosci dla vsp
-	lib::condition_synchroniser edp_vsp_synchroniser;
+	lib::condition_synchroniser first_measure_synchroniser;
 
 	//! dostep do nowej wiadomosci dla vsp
 	lib::condition_synchroniser new_command_synchroniser;

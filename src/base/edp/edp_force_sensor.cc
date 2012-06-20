@@ -116,7 +116,7 @@ void force::operator()()
 					}
 				}
 			}
-			edp_vsp_synchroniser.command();
+			first_measure_synchroniser.command();
 
 		} //!< koniec TRY
 

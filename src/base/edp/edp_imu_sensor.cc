@@ -69,7 +69,7 @@ void imu::operator()()
 }
 
 imu::imu(common::manip_effector &_master) :
-		imu_sensor_test_mode(true), master(_master)
+		imu_sensor_test_mode(true), master(_master), new_edp_command(false)
 {
 	sr_msg =
 			boost::shared_ptr <lib::sr_vsp>(new lib::sr_vsp(lib::EDP, "i_" + master.config.robot_name, master.config.get_sr_attach_point()));
@@ -123,6 +123,12 @@ void imu::get_reading(void)
 
 	}
 
+}
+
+void imu::set_command_execution_finish() // podniesienie semafora
+{
+	new_edp_command = false;
+	new_command_synchroniser.command();
 }
 
 } // namespace sensor

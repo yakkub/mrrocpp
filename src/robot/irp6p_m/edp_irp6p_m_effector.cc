@@ -70,7 +70,7 @@ void effector::create_threads()
 
 	//vs->thread_started.wait();
 	//zeby miec pewnosc, ze zostal wykonany pierwszy pomiar
-	vs->edp_vsp_synchroniser.wait();
+	vs->first_measure_synchroniser.wait();
 	motor_driven_effector::hi_create_threads();
 }
 

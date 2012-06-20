@@ -62,11 +62,12 @@ void effector::create_threads()
 
 	//vs->thread_started.wait();
 	//zeby miec pewnosc, ze zostal wykonany pierwszy pomiar
-	vs->edp_vsp_synchroniser.wait();
+	vs->first_measure_synchroniser.wait();
 
 	imu_sen = (boost::shared_ptr <sensor::imu>) sensor::return_created_edp_imu_sensor(*this);
 	imu_tid = boost::thread(boost::bind(&sensor::imu::operator(), imu_sen));
-	imu_sen->thread_started.wait();
+	imu_sen->first_measure_synchroniser.wait();
+
 	motor_driven_effector::hi_create_threads();
 }
 

@@ -26,6 +26,11 @@ namespace edp {
 namespace common {
 class manip_effector;
 
+enum IMU_ORDER
+{
+	IMU_CONFIGURE
+};
+
 }
 
 namespace sensor {
@@ -59,7 +64,12 @@ protected:
 	void wait_for_event(void); // oczekiwanie na zdarzenie
 
 public:
+	boost::mutex mtx;
+	lib::condition_synchroniser new_command_synchroniser;
+	bool new_edp_command;
+	common::IMU_ORDER command;
 
+	lib::condition_synchroniser first_measure_synchroniser;
 	lib::condition_synchroniser thread_started;
 	//! komunikacja z SR
 	boost::shared_ptr <lib::sr_vsp> sr_msg;
@@ -69,6 +79,7 @@ public:
 	imu(common::manip_effector &_master);
 
 	virtual ~imu();
+	void set_command_execution_finish();
 
 };
 // end: class edp_force_sensor
