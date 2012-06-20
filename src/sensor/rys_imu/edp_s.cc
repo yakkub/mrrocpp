@@ -53,7 +53,7 @@ void rys_imu::disconnect_from_hardware(void)
 
 void rys_imu::configure_particular_sensor(void)
 {
-
+	sr_msg->message("RYS IMU sensor being configured");
 }
 
 void rys_imu::wait_for_particular_event()

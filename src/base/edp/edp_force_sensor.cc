@@ -115,8 +115,8 @@ void force::operator()()
 						std::cerr << " " << std::endl;
 					}
 				}
+				first_measure_synchroniser.command();
 			}
-			first_measure_synchroniser.command();
 
 		} //!< koniec TRY
 

@@ -62,6 +62,7 @@ protected:
 
 	void get_reading(void);
 	void wait_for_event(void); // oczekiwanie na zdarzenie
+	void configure_sensor(void);
 
 public:
 	boost::mutex mtx;

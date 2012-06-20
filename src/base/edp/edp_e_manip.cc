@@ -78,8 +78,9 @@ bool manip_effector::compute_servo_joints_and_frame(void)
 
 		// force_sensor configuration
 		if (vs != NULL) {
-			boost::mutex::scoped_lock lock(vs->mtx);
+
 			if ((is_synchronised()) && (!(force_sensor_post_synchro_configuration))) {
+				boost::mutex::scoped_lock lock(vs->mtx);
 				force_sensor_post_synchro_configuration = true;
 				vs->new_edp_command = true;
 				vs->command = FORCE_CONFIGURE;
@@ -88,8 +89,9 @@ bool manip_effector::compute_servo_joints_and_frame(void)
 
 		// imu_sensor configuration
 		if (imu_sen != NULL) {
-			boost::mutex::scoped_lock lock(imu_sen->mtx);
+
 			if ((is_synchronised()) && (!(imu_sensor_post_synchro_configuration))) {
+				boost::mutex::scoped_lock lock(imu_sen->mtx);
 				imu_sensor_post_synchro_configuration = true;
 				imu_sen->new_edp_command = true;
 				imu_sen->command = IMU_CONFIGURE;

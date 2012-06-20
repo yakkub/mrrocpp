@@ -25,7 +25,6 @@ void imu::operator()()
 
 		thread_started.command();
 
-		configure_sensor();
 	}
 
 	catch (lib::exception::se_sensor & error) {
@@ -61,11 +60,73 @@ void imu::operator()()
 	}
 
 	while (!boost::this_thread::interruption_requested()) {
-		wait_for_event();
-		get_reading();
+
+		try {
+			if (new_edp_command) {
+				boost::mutex::scoped_lock lock(mtx);
+				// TODO: this should be handled with boost::bind functor parameter
+				switch (command)
+				{
+					case (common::IMU_CONFIGURE):
+						configure_sensor();
+						break;
+					default:
+						break;
+				}
+				set_command_execution_finish();
+			} else {
+
+				//	sr_msg->message("else 12");
+				wait_for_event();
+
+				get_reading();
+				first_measure_synchroniser.command();
+			}
+
+		} //!< koniec TRY
+
+		catch (lib::exception::se_sensor & error) {
+			std::cerr << "sensor_error w force thread EDP" << std::endl;
+
+			uint64_t error0 = 0;
+
+			if (uint64_t const * tmp = boost::get_error_info <mrrocpp_error0>(error)) {
+				error0 = *tmp;
+			}
+
+			switch (error0)
+			{
+				case SENSOR_NOT_CONFIGURED:
+					//	from_vsp.vsp_report = lib::sensor::VSP_SENSOR_NOT_CONFIGURED;
+					break;
+				case READING_NOT_READY:
+					//	from_vsp.vsp_report = lib::sensor::VSP_READING_NOT_READY;
+					break;
+			}
+			sr_msg->message(lib::FATAL_ERROR, error0);
+
+		}
+
+		catch (...) {
+			std::cerr << "unidentified error in EDP force thread" << std::endl;
+		}
+
 		//	sr_msg->message("imu operator() in while");
 	}
 	sr_msg->message("imu operator() interruption_requested");
+}
+
+/**************************** inicjacja czujnika ****************************/
+void imu::configure_sensor(void)
+{ // by Y
+
+	//  printf("edp Sensor configured\n");
+	sr_msg->message("IMU sensor being configured");
+
+	if (!imu_sensor_test_mode) {
+		configure_particular_sensor();
+	}
+
 }
 
 imu::imu(common::manip_effector &_master) :
