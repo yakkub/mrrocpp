@@ -91,31 +91,6 @@ void force::operator()()
 
 				get_reading();
 
-
-
-				lib::Homog_matrix current_frame_wo_offset = master.servo_current_frame_wo_tool_dp.read();
-				current_frame_wo_offset.remove_translation();
-				lib::Ft_tr ft_tr_inv_current_frame_matrix(!current_frame_wo_offset);
-
-				lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) master.get_current_kinematic_model())->tool);
-				lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
-
-				// uwaga sila nie przemnozona przez tool'a i current frame orientation
-				lib::Ft_vector current_force = master.force_dp.read();
-
-				lib::Ft_vector current_force_torque(ft_tr_inv_tool_matrix * ft_tr_inv_current_frame_matrix
-						* current_force);
-
-				// scope-locked reader data update
-				{
-					if (master.rb_obj) {
-						boost::mutex::scoped_lock lock(master.rb_obj->reader_mutex);
-
-						current_force_torque.to_table(master.rb_obj->step_data.force);
-					} else {
-						//	std::cerr << " " << std::endl;
-					}
-				}
 				first_measure_synchroniser.command();
 			}
 
@@ -273,7 +248,7 @@ void force::get_reading(void)
 
 				}
 
-				//sila zwracamy w biezacej oritntacji
+				//sile zwracamy w biezacej orientacji
 
 				//	lib::Ft_vector output(lib::Ft_tr(!current_orientation) * output_in_base);
 
@@ -293,6 +268,31 @@ void force::get_reading(void)
 
 	} else {
 		master.force_dp.write(ft_table);
+	}
+
+	// przygotowanie odczytu dla readera przetransformowanego do ukladu narzedzia
+
+	lib::Homog_matrix current_frame_wo_offset = master.servo_current_frame_wo_tool_dp.read();
+	current_frame_wo_offset.remove_translation();
+	lib::Ft_tr ft_tr_inv_current_frame_matrix(!current_frame_wo_offset);
+
+	lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) master.get_current_kinematic_model())->tool);
+	lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
+
+	// uwaga sila nie przemnozona przez tool'a i current frame orientation
+	lib::Ft_vector current_force = master.force_dp.read();
+
+	lib::Ft_vector current_force_torque(ft_tr_inv_tool_matrix * ft_tr_inv_current_frame_matrix * current_force);
+
+	// scope-locked reader data update
+	{
+		if (master.rb_obj) {
+			boost::mutex::scoped_lock lock(master.rb_obj->reader_mutex);
+
+			current_force_torque.to_table(master.rb_obj->step_data.force);
+		} else {
+			//	std::cerr << " " << std::endl;
+		}
 	}
 
 }
