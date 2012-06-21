@@ -91,9 +91,9 @@ void force::operator()()
 
 				get_reading();
 
-				lib::Ft_vector current_force;
 
-				lib::Homog_matrix current_frame_wo_offset = master.return_current_frame();
+
+				lib::Homog_matrix current_frame_wo_offset = master.servo_current_frame_wo_tool_dp.read();
 				current_frame_wo_offset.remove_translation();
 				lib::Ft_tr ft_tr_inv_current_frame_matrix(!current_frame_wo_offset);
 
@@ -101,7 +101,7 @@ void force::operator()()
 				lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
 
 				// uwaga sila nie przemnozona przez tool'a i current frame orientation
-				master.force_dp.read(current_force);
+				lib::Ft_vector current_force = master.force_dp.read();
 
 				lib::Ft_vector current_force_torque(ft_tr_inv_tool_matrix * ft_tr_inv_current_frame_matrix
 						* current_force);
@@ -226,7 +226,7 @@ void force::get_reading(void)
 
 		// jesli ma byc wykorzytstywana biblioteka transformacji sil
 		if (gravity_transformation) {
-			lib::Homog_matrix frame = master.return_current_frame();
+			lib::Homog_matrix frame = master.servo_current_frame_wo_tool_dp.read();
 			// lib::Homog_matrix frame(master.force_current_end_effector_frame);
 
 			bool overforce = false;
@@ -312,7 +312,7 @@ void force::configure_sensor(void)
 	clear_cb();
 
 	// polozenie kisci bez narzedzia wzgledem bazy
-	lib::Homog_matrix frame = master.return_current_frame(); // FORCE Transformation by Slawomir Bazant
+	lib::Homog_matrix frame = master.servo_current_frame_wo_tool_dp.read(); // FORCE Transformation by Slawomir Bazant
 	// lib::Homog_matrix frame(master.force_current_end_effector_frame); // pobranie aktualnej ramki
 	if (!gravity_transformation) // nie powolano jeszcze obiektu
 	{
@@ -368,7 +368,7 @@ force::~force()
 void force::set_force_tool(void)
 {
 	lib::K_vector gravity_arm_in_sensor(next_force_tool_position);
-	lib::Homog_matrix frame = master.return_current_frame();
+	lib::Homog_matrix frame = master.servo_current_frame_wo_tool_dp.read();
 	gravity_transformation->defineTool(frame, next_force_tool_weight, gravity_arm_in_sensor);
 
 	current_force_tool_position = next_force_tool_position;

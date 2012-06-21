@@ -48,6 +48,12 @@ public:
 		output = data;
 	}
 
+	T read()
+	{
+		boost::mutex::scoped_lock lock(boost_mutex);
+		return data;
+	}
+
 };
 
 } // namespace common

@@ -74,8 +74,9 @@ bool manip_effector::compute_servo_joints_and_frame(void)
 		}
 
 		// Obliczenie polozenia robota we wsp. zewnetrznych bez narzedzia.
+		lib::Homog_matrix servo_current_frame_wo_tool;
 		((mrrocpp::kinematics::common::kinematic_model_with_tool*) get_current_kinematic_model())->i2e_wo_tool_transform(servo_current_joints, servo_current_frame_wo_tool);
-
+		servo_current_frame_wo_tool_dp.write(servo_current_frame_wo_tool);
 		// force_sensor configuration
 		if (vs != NULL) {
 
@@ -172,16 +173,14 @@ void manip_effector::get_arm_position_with_force_and_sb(bool read_hardware, lib:
 
 	reply.servo_step = step_counter;
 
-	lib::Homog_matrix current_frame_wo_offset = return_current_frame();
+	lib::Homog_matrix current_frame_wo_offset = servo_current_frame_wo_tool_dp.read();
 	current_frame_wo_offset.remove_translation();
 	lib::Ft_tr ft_tr_inv_current_frame_matrix(!current_frame_wo_offset);
 
 	lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) get_current_kinematic_model())->tool);
 	lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
 
-	lib::Ft_vector current_force;
-
-	force_dp.read(current_force);
+	lib::Ft_vector current_force = force_dp.read();
 
 	// sprowadzenie sil z ukladu bazowego do ukladu kisci
 	// modyfikacja pobranych sil w ukladzie czujnika - do ukladu wyznaczonego przez force_tool_frame i reference_frame
@@ -370,13 +369,12 @@ void manip_effector::iterate_macrostep(const lib::JointArray & begining_joints, 
 	// poczatek generacji makrokrokubase_pos_xyz_rot_xyz_vector
 	for (int step = 1; step <= ECP_motion_steps; ++step) {
 
-		lib::Homog_matrix current_frame_wo_offset = return_current_frame();
+		lib::Homog_matrix current_frame_wo_offset = servo_current_frame_wo_tool_dp.read();
 		current_frame_wo_offset.remove_translation();
 		lib::V_tr v_tr_current_frame_matrix(current_frame_wo_offset);
 
-		lib::Ft_vector current_force;
+		lib::Ft_vector current_force = force_dp.read();
 
-		force_dp.read(current_force);
 		// sprowadzenie sil z ukladu bazowego do ukladu kisci
 		// modyfikacja pobranych sil w ukladzie czujnika - do ukladu wyznaczonego przez force_tool_frame i reference_frame
 
@@ -667,26 +665,14 @@ void manip_effector::compute_frame(const lib::c_buffer &instruction)
 }
 /*--------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*/
-
-lib::Homog_matrix manip_effector::return_current_frame()
-{ // by Y
-	boost::mutex::scoped_lock lock(effector_mutex);
-	// przepisanie danych na zestaw lokalny dla edp_force
-	// lib::copy_frame(force_current_end_effector_frame, global_current_end_effector_frame);
-	lib::Homog_matrix return_frame(servo_current_frame_wo_tool);
-
-	return return_frame;
-}
-
-/*--------------------------------------------------------------------------*/
-
 // Synchronizacja robota.
 void manip_effector::synchronise()
 {
 	motor_driven_effector::synchronise();
 	get_current_kinematic_model()->i2e_transform(current_joints, current_end_effector_frame);
 }
+
+/*--------------------------------------------------------------------------*/
 
 //   sprawdza stan robota
 void manip_effector::get_controller_state(lib::c_buffer &instruction)

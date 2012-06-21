@@ -10,10 +10,6 @@
 // Konfigurator
 #include "base/lib/configurator.h"
 
-
-
-
-
 namespace mrrocpp {
 namespace edp {
 namespace sensor {
@@ -40,13 +36,6 @@ protected:
 	virtual void compute_frame(const lib::c_buffer &instruction);
 
 	/*!
-	 * \brief the matrix of the end effector frame without tool for the servo buffer (pose of the WRIST).
-	 *
-	 * It is computed for every single step of the motion.
-	 */
-	lib::Homog_matrix servo_current_frame_wo_tool;
-
-	/*!
 	 * \brief desired end--effector frame
 	 *
 	 * for the whole macrostep
@@ -59,7 +48,6 @@ protected:
 	 * set once for the macrostep execution
 	 */
 	lib::Homog_matrix current_end_effector_frame;
-
 
 	/*!
 	 * \brief move arm method for the FRAME command in the single thread variant.
@@ -98,13 +86,6 @@ public:
 	manip_effector(shell &_shell, const lib::robot_name_t & l_robot_name, lib::c_buffer & c_buffer_ref, lib::r_buffer & r_buffer_ref);
 
 	/*!
-	 * \brief methods returns servo_current_frame_wo_tool
-	 *
-	 * mutex is used
-	 */
-	lib::Homog_matrix return_current_frame();
-
-	/*!
 	 * \brief computation of the base_pos_xyz_rot_xyz_vector.
 	 *
 	 * For the purpose of the position-force control. It is called once from the pose_force_torque_at_frame_move.
@@ -136,6 +117,13 @@ public:
 	boost::shared_ptr <sensor::force> vs;
 
 	edp_dp <lib::Ft_vector> force_dp;
+
+	/*!
+	 * \brief the matrix of the end effector frame without tool for the servo buffer (pose of the WRIST).
+	 *
+	 * It is computed for every single step of the motion.
+	 */
+	edp_dp <lib::Homog_matrix> servo_current_frame_wo_tool_dp;
 
 	boost::shared_ptr <sensor::imu> imu_sen;
 
