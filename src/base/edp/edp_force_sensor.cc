@@ -199,6 +199,7 @@ void force::get_reading(void)
 	if (!force_sensor_test_mode) {
 		get_particular_reading();
 		lib::Homog_matrix current_frame = master.servo_current_frame_wo_tool_dp.read();
+		lib::Homog_matrix current_rotation(current_frame.return_with_with_removed_translation());
 
 		lib::Ft_vector force_output;
 
@@ -215,7 +216,7 @@ void force::get_reading(void)
 
 			if (!overforce) {
 				//sily przechowujemy w zerowej orientacji bazowej w ukladzie nadgarstka
-				lib::Ft_vector base_force = gravity_transformation->getForce(ft_table, current_frame);
+				lib::Ft_vector base_force = gravity_transformation->getForce(ft_table, current_rotation);
 
 				// dodanie nowej sily do bufora dla celow usredniania (filtracji dolnoprzepustowej)
 				cb.push_back(base_force);
@@ -248,7 +249,7 @@ void force::get_reading(void)
 		}
 
 		// przygotowanie odczytu dla readera przetransformowanego do ukladu narzedzia
-		lib::Homog_matrix current_rotation(current_frame.return_with_with_removed_translation());
+
 		lib::Ft_tr ft_tr_inv_current_rotation_matrix(!current_rotation);
 
 		lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) master.get_current_kinematic_model())->tool);
