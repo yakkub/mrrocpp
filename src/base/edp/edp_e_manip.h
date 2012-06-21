@@ -100,9 +100,9 @@ public:
 	/*!
 	 * \brief methods returns servo_current_frame_wo_tool
 	 *
-	 * there are two variants just the servo_current_frame_wo_tool frame and the same frame with removed translation
+	 * mutex is used
 	 */
-	lib::Homog_matrix return_current_frame(TRANSLATION_ENUM translation_mode);
+	lib::Homog_matrix return_current_frame();
 
 	/*!
 	 * \brief computation of the base_pos_xyz_rot_xyz_vector.

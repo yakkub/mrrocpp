@@ -172,7 +172,8 @@ void manip_effector::get_arm_position_with_force_and_sb(bool read_hardware, lib:
 
 	reply.servo_step = step_counter;
 
-	lib::Homog_matrix current_frame_wo_offset = return_current_frame(WITHOUT_TRANSLATION);
+	lib::Homog_matrix current_frame_wo_offset = return_current_frame();
+	current_frame_wo_offset.remove_translation();
 	lib::Ft_tr ft_tr_inv_current_frame_matrix(!current_frame_wo_offset);
 
 	lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) get_current_kinematic_model())->tool);
@@ -369,8 +370,8 @@ void manip_effector::iterate_macrostep(const lib::JointArray & begining_joints, 
 	// poczatek generacji makrokrokubase_pos_xyz_rot_xyz_vector
 	for (int step = 1; step <= ECP_motion_steps; ++step) {
 
-		lib::Homog_matrix current_frame_wo_offset = return_current_frame(WITHOUT_TRANSLATION);
-
+		lib::Homog_matrix current_frame_wo_offset = return_current_frame();
+		current_frame_wo_offset.remove_translation();
 		lib::V_tr v_tr_current_frame_matrix(current_frame_wo_offset);
 
 		lib::Ft_vector current_force;
@@ -668,15 +669,13 @@ void manip_effector::compute_frame(const lib::c_buffer &instruction)
 
 /*--------------------------------------------------------------------------*/
 
-lib::Homog_matrix manip_effector::return_current_frame(TRANSLATION_ENUM translation_mode)
+lib::Homog_matrix manip_effector::return_current_frame()
 { // by Y
 	boost::mutex::scoped_lock lock(effector_mutex);
 	// przepisanie danych na zestaw lokalny dla edp_force
 	// lib::copy_frame(force_current_end_effector_frame, global_current_end_effector_frame);
 	lib::Homog_matrix return_frame(servo_current_frame_wo_tool);
 
-	if (translation_mode == WITHOUT_TRANSLATION)
-		return_frame.remove_translation();
 	return return_frame;
 }
 

@@ -93,7 +93,8 @@ void force::operator()()
 
 				lib::Ft_vector current_force;
 
-				lib::Homog_matrix current_frame_wo_offset = master.return_current_frame(common::WITHOUT_TRANSLATION);
+				lib::Homog_matrix current_frame_wo_offset = master.return_current_frame();
+				current_frame_wo_offset.remove_translation();
 				lib::Ft_tr ft_tr_inv_current_frame_matrix(!current_frame_wo_offset);
 
 				lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) master.get_current_kinematic_model())->tool);
@@ -225,7 +226,7 @@ void force::get_reading(void)
 
 		// jesli ma byc wykorzytstywana biblioteka transformacji sil
 		if (gravity_transformation) {
-			lib::Homog_matrix frame = master.return_current_frame(common::WITH_TRANSLATION);
+			lib::Homog_matrix frame = master.return_current_frame();
 			// lib::Homog_matrix frame(master.force_current_end_effector_frame);
 
 			bool overforce = false;
@@ -311,7 +312,7 @@ void force::configure_sensor(void)
 	clear_cb();
 
 	// polozenie kisci bez narzedzia wzgledem bazy
-	lib::Homog_matrix frame = master.return_current_frame(common::WITH_TRANSLATION); // FORCE Transformation by Slawomir Bazant
+	lib::Homog_matrix frame = master.return_current_frame(); // FORCE Transformation by Slawomir Bazant
 	// lib::Homog_matrix frame(master.force_current_end_effector_frame); // pobranie aktualnej ramki
 	if (!gravity_transformation) // nie powolano jeszcze obiektu
 	{
@@ -367,7 +368,7 @@ force::~force()
 void force::set_force_tool(void)
 {
 	lib::K_vector gravity_arm_in_sensor(next_force_tool_position);
-	lib::Homog_matrix frame = master.return_current_frame(common::WITH_TRANSLATION);
+	lib::Homog_matrix frame = master.return_current_frame();
 	gravity_transformation->defineTool(frame, next_force_tool_weight, gravity_arm_in_sensor);
 
 	current_force_tool_position = next_force_tool_position;
