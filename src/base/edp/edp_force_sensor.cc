@@ -198,12 +198,13 @@ void force::get_reading(void)
 
 	if (!force_sensor_test_mode) {
 		get_particular_reading();
+		lib::Homog_matrix current_frame = master.servo_current_frame_wo_tool_dp.read();
 
-		// jesli ma byc wykorzytstywana biblioteka transformacji sil
+		lib::Ft_vector force_output;
+
 		if (gravity_transformation) {
-			lib::Homog_matrix frame = master.servo_current_frame_wo_tool_dp.read();
-			// lib::Homog_matrix frame(master.force_current_end_effector_frame);
 
+			// sprawdzenie ograniczen na sile
 			bool overforce = false;
 			for (int i = 0; i < 6; i++) {
 				if ((fabs(ft_table[i]) > force_constraints[i]) || (!(std::isfinite(ft_table[i])))) {
@@ -211,51 +212,31 @@ void force::get_reading(void)
 
 				}
 			}
-			/*
-			 std::stringstream buffero(std::stringstream::in | std::stringstream::out);
-			 buffero << "over_force detected step: " << master.step_counter << " ";
-			 for (int i = 0; i < 6; i++) {
-			 buffero << i << ": " << ft_table[i] << " ";
-			 }
 
-			 std::cout << buffero.str() << std::endl;
-			 */
 			if (!overforce) {
-				lib::Ft_vector base_force = gravity_transformation->getForce(ft_table, frame);
+				//sily przechowujemy w zerowej orientacji bazowej w ukladzie nadgarstka
+				lib::Ft_vector base_force = gravity_transformation->getForce(ft_table, current_frame);
 
-				lib::Homog_matrix current_orientation(frame.return_with_with_removed_translation());
-
-				//sily przechowujemy w zerowej orientacji bazowej
-
-				//		lib::Ft_vector force_in_base_orientation(lib::Ft_tr(current_orientation) * base_force);
-
-				//		cb.push_back(force_in_base_orientation);
+				// dodanie nowej sily do bufora dla celow usredniania (filtracji dolnoprzepustowej)
 				cb.push_back(base_force);
 
-				lib::Ft_vector output_in_base;
-
-				for (int j = 0; j < 6; j++) {
-					output_in_base[j] = 0.0;
-				}
-
 				// usredniamy za FORCE_BUFFER_LENGHT pomiarow
+				for (int j = 0; j < 6; j++) {
+					force_output[j] = 0.0;
+				}
 
 				for (int i = 0; i < FORCE_BUFFER_LENGHT; i++) {
 
 					for (int j = 0; j < 6; j++) {
-						output_in_base[j] += (cb[i][j]) / (double) FORCE_BUFFER_LENGHT;
+						force_output[j] += (cb[i][j]) / (double) FORCE_BUFFER_LENGHT;
 					}
 
 				}
+				//zapis do bufora wymiany z watkiem transformation
+				master.force_dp.write(force_output);
 
-				//sile zwracamy w biezacej orientacji
-
-				//	lib::Ft_vector output(lib::Ft_tr(!current_orientation) * output_in_base);
-
-				lib::Ft_vector output = output_in_base;
-
-				master.force_dp.write(output);
 			} else {
+				// wypisanie komunikatu o przekroczeniu sily progowej
 				std::stringstream buffer(std::stringstream::in | std::stringstream::out);
 				buffer << "over_force detected step: " << master.step_counter << " ";
 				for (int i = 0; i < 6; i++) {
@@ -266,33 +247,28 @@ void force::get_reading(void)
 			}
 		}
 
-	} else {
-		master.force_dp.write(ft_table);
-	}
+		// przygotowanie odczytu dla readera przetransformowanego do ukladu narzedzia
+		lib::Homog_matrix current_rotation(current_frame.return_with_with_removed_translation());
+		lib::Ft_tr ft_tr_inv_current_rotation_matrix(!current_rotation);
 
-	// przygotowanie odczytu dla readera przetransformowanego do ukladu narzedzia
+		lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) master.get_current_kinematic_model())->tool);
+		lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
 
-	lib::Homog_matrix current_frame_wo_offset = master.servo_current_frame_wo_tool_dp.read();
-	current_frame_wo_offset.remove_translation();
-	lib::Ft_tr ft_tr_inv_current_frame_matrix(!current_frame_wo_offset);
+		lib::Ft_vector current_force_in_tool(ft_tr_inv_tool_matrix * ft_tr_inv_current_rotation_matrix * force_output);
 
-	lib::Homog_matrix current_tool(((mrrocpp::kinematics::common::kinematic_model_with_tool*) master.get_current_kinematic_model())->tool);
-	lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
+		// scope-locked reader data update
+		{
+			if (master.rb_obj) {
+				boost::mutex::scoped_lock lock(master.rb_obj->reader_mutex);
 
-	// uwaga sila nie przemnozona przez tool'a i current frame orientation
-	lib::Ft_vector current_force = master.force_dp.read();
-
-	lib::Ft_vector current_force_torque(ft_tr_inv_tool_matrix * ft_tr_inv_current_frame_matrix * current_force);
-
-	// scope-locked reader data update
-	{
-		if (master.rb_obj) {
-			boost::mutex::scoped_lock lock(master.rb_obj->reader_mutex);
-
-			current_force_torque.to_table(master.rb_obj->step_data.force);
-		} else {
-			//	std::cerr << " " << std::endl;
+				current_force_in_tool.to_table(master.rb_obj->step_data.force);
+			} else {
+				//	std::cerr << " " << std::endl;
+			}
 		}
+
+	} else {
+		sr_msg->message(lib::NON_FATAL_ERROR, "Nie zainicjowano gravity_transformation");
 	}
 
 }
