@@ -290,7 +290,7 @@ void force::configure_sensor(void)
 
 	// polozenie kisci bez narzedzia wzgledem bazy
 	lib::Homog_matrix current_frame = master.servo_current_frame_wo_tool_dp.read(); // FORCE Transformation by Slawomir Bazant
-	// lib::Homog_matrix frame(master.force_current_end_effector_frame); // pobranie aktualnej ramki
+
 	if (!gravity_transformation) // nie powolano jeszcze obiektu
 	{
 
@@ -302,7 +302,6 @@ void force::configure_sensor(void)
 				force_constraints[i] = strtod(tmp, &tmp);
 			}
 			free(toDel);
-			// std::cout<<sensor_frame<<std::endl;
 		}
 
 		//zczytanie polozenia czujnika wzgledem nadgarstka
@@ -315,7 +314,7 @@ void force::configure_sensor(void)
 			}
 			sensor_frame = lib::Homog_matrix(tab);
 			free(toDel);
-			// std::cout<<sensor_frame<<std::endl;
+
 		}
 
 		// zczytanie ciezaru narzedzia
@@ -328,8 +327,7 @@ void force::configure_sensor(void)
 		for (int i = 0; i < 3; i++)
 			point[i] = strtod(tmp, &tmp);
 		free(toDel);
-		// double point[3] = { master.config.value<double>("x_axis_arm"),
-		//		master.config.value<double>("y_axis_arm"), master.config.return_double_value("z_axis_arm") };
+
 		lib::K_vector pointofgravity(point);
 		gravity_transformation =
 				new lib::ForceTrans(force_sensor_name, current_frame, sensor_frame, weight, pointofgravity, is_right_turn_frame);
