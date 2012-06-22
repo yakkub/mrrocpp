@@ -328,15 +328,12 @@ void force::configure_sensor(void)
 		for (int i = 0; i < 3; i++)
 			point[i] = strtod(tmp, &tmp);
 		free(toDel);
-
+		// double point[3] = { master.config.value<double>("x_axis_arm"),
+		//		master.config.value<double>("y_axis_arm"), master.config.return_double_value("z_axis_arm") };
 		lib::K_vector pointofgravity(point);
-
-		// inicjacja narzedzia i sily reakcji
 		gravity_transformation =
 				new lib::ForceTrans(force_sensor_name, current_frame, sensor_frame, weight, pointofgravity, is_right_turn_frame);
 	} else {
-
-		// wpisanie narzedzia i wyznaczenie sily reakcji
 		gravity_transformation->synchro(current_frame);
 	}
 
