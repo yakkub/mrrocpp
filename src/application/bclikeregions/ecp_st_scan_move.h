@@ -29,9 +29,9 @@ class bcl_t_switcher;
 
 }
 
-namespace subtask {
+namespace sub_task {
 
-class ecp_st_scan_move : public subtask {
+class ecp_st_scan_move : public sub_task {
 public:
 	/**
 	 * Subtask constructor

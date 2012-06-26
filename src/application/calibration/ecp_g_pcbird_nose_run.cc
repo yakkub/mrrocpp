@@ -29,7 +29,8 @@ bool pcbird_nose_run::first_step()
 	//bedziemy pobierali dane o robocie
 	the_robot->ecp_command.instruction_type = lib::GET;
 	the_robot->ecp_command.get_type = ARM_DEFINITION;
-	the_robot->ecp_command.get_arm_type = lib::FRAME;
+	the_robot->ecp_command.set_arm_type = lib::FRAME;
+	//the_robot->ecp_command.get_arm_type = lib::FRAME;
 
 	return tff_nose_run::first_step();
 }

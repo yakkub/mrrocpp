@@ -38,6 +38,7 @@ target_link_libraries(ecp_t_axzb_eih
 	ecp_r_irp6p_m
 	ecp_r_irp6ot_m
 	discode_sensor
+	logger_client
 	ecp ${COMMON_LIBRARIES}
 )
 
@@ -45,6 +46,7 @@ target_link_libraries(ecp_t_axxb_eih
 	ecp_r_irp6p_m
 	ecp_r_irp6ot_m
 	discode_sensor
+	logger_client
 	ecp ${COMMON_LIBRARIES}
 )
 

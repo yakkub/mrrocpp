@@ -16,7 +16,7 @@
 namespace mrrocpp {
 namespace ecp {
 namespace common {
-namespace subtask {
+namespace sub_task {
 
 using namespace logger;
 using namespace std;
@@ -29,28 +29,28 @@ acq_eih::acq_eih(task::task &_ecp_t, boost::shared_ptr <discode_sensor> ds) :
 	printf("acq_eih::acq_eih() 1\n");
 	fflush(stdout);
 	// Create an adequate robot. - depending on the ini section name.
-	if (subtask::ecp_t.config.robot_name == lib::irp6ot_m::ROBOT_NAME) {
-		subtask::ecp_t.ecp_m_robot = (boost::shared_ptr <robot_t>) new irp6ot_m::robot(_ecp_t);
-		subtask::sr_ecp_msg.message("IRp6ot loaded");
+	if (sub_task::ecp_t.config.robot_name == lib::irp6ot_m::ROBOT_NAME) {
+		sub_task::ecp_t.ecp_m_robot = (boost::shared_ptr <robot_t>) new irp6ot_m::robot(_ecp_t);
+		sub_task::sr_ecp_msg.message("IRp6ot loaded");
 		robot = TRACK;
-	} else if (subtask::ecp_t.config.robot_name == lib::irp6p_m::ROBOT_NAME) {
-		subtask::ecp_t.ecp_m_robot = (boost::shared_ptr <robot_t>) new irp6p_m::robot(_ecp_t);
-		subtask::sr_ecp_msg.message("IRp6p loaded");
+	} else if (sub_task::ecp_t.config.robot_name == lib::irp6p_m::ROBOT_NAME) {
+		sub_task::ecp_t.ecp_m_robot = (boost::shared_ptr <robot_t>) new irp6p_m::robot(_ecp_t);
+		sub_task::sr_ecp_msg.message("IRp6p loaded");
 		robot = POSTUMENT;
 	}
 
 	printf("acq_eih::acq_eih() 2\n");
 	fflush(stdout);
 
-	smooth_path = subtask::ecp_t.config.value <std::string> ("smooth_path");
-	delay_ms = subtask::ecp_t.config.value <int> ("delay");
-	M = subtask::ecp_t.config.value <int> ("M");
-	A = subtask::ecp_t.config.value <double> ("A");
-	C = subtask::ecp_t.config.value <double> ("C");
-	D = subtask::ecp_t.config.value <double> ("D");
-	E = subtask::ecp_t.config.value <double> ("E");
-	acc = subtask::ecp_t.config.value <double> ("acceleration");
-	vel = subtask::ecp_t.config.value <double> ("velocity");
+	smooth_path = sub_task::ecp_t.config.value <std::string> ("smooth_path");
+	delay_ms = sub_task::ecp_t.config.value <int> ("delay");
+	M = sub_task::ecp_t.config.value <int> ("M");
+	A = sub_task::ecp_t.config.value <double> ("A");
+	C = sub_task::ecp_t.config.value <double> ("C");
+	D = sub_task::ecp_t.config.value <double> ("D");
+	E = sub_task::ecp_t.config.value <double> ("E");
+	acc = sub_task::ecp_t.config.value <double> ("acceleration");
+	vel = sub_task::ecp_t.config.value <double> ("velocity");
 	calibrated = false;
 
 	printf("acq_eih::acq_eih() 3\n");
@@ -68,15 +68,17 @@ acq_eih::acq_eih(task::task &_ecp_t, boost::shared_ptr <discode_sensor> ds) :
 	sensor = ds;
 
 	generator = new generator::eihgenerator(_ecp_t);
-	generator->sensor_m = subtask::ecp_t.sensor_m;
+	generator->sensor_m = sub_task::ecp_t.sensor_m;
+
+	get_position = new common::generator::get_position(_ecp_t, lib::ECP_XYZ_ANGLE_AXIS, 6);
 
 	printf("acq_eih::acq_eih() 7\n");
 	fflush(stdout);
 
-	subtask::sr_ecp_msg.message("ecp loaded eihacquisition");
+	sub_task::sr_ecp_msg.message("ecp loaded eihacquisition");
 
 	// TODO: UWAGA: TU JEST WIELKI BUG: pole ofp nie jest zainicjalizowane
-	ofp.number_of_measures = subtask::ecp_t.config.value <int> ("measures_count");
+	ofp.number_of_measures = sub_task::ecp_t.config.value <int> ("measures_count");
 
 	// translation vector (from robot base to tool frame) - received from MRROC
 	ofp.k = gsl_vector_calloc(3 * ofp.number_of_measures);
@@ -115,7 +117,7 @@ void acq_eih::main_task_algorithm(void)
 	delay.tv_sec = (int) (delay_ms / 1000);
 	std::vector <double> coordinates(6);
 
-	subtask::sr_ecp_msg.message("ecp eihacquisition ready");
+	sub_task::sr_ecp_msg.message("ecp eihacquisition ready");
 
 	//Czekam, az czujnik bedzie skonfigurowany.
 	//ecp_mp::sensor::fradia_sensor<chessboard_t,lib::empty_t> * fradia = dynamic_cast<ecp_mp::sensor::fradia_sensor<chessboard_t,lib::empty_t> *> (sub_task::ecp_t.sensor_m[ecp_mp::sensor::SENSOR_CVFRADIA]);
@@ -138,11 +140,14 @@ void acq_eih::main_task_algorithm(void)
 		retrieve_reading();
 		nose->Move();
 		generator->Move();
+		//odczyt pozycji w ANGLE_AXIS
+		get_position->Move();
+		position_vector = get_position->get_position_vector();
 		store_data();
 	}
 	nose->Move();
 
-	subtask::sr_ecp_msg.message("Data collection\n");
+	sub_task::sr_ecp_msg.message("Data collection\n");
 
 	// maximum velocity and acceleration of smooth generator
 	//double vv[lib::MAX_SERVOS_NR] = { vel, vel, vel, vel, vel, vel, vel, vel };
@@ -460,8 +465,8 @@ void acq_eih::retrieve_reading()
 		if (sensor->get_state() == discode_sensor::DSS_READING_RECEIVED) {
 			reading = sensor->retreive_reading <Types::Mrrocpp_Proxy::EIHReading> ();
 		}
-	} catch (exception &ex) {
-		log("acw_st_acq_eih::retrieve_reading(): %s\n", ex.what());
+	} catch (string &ex) {
+		log("acw_st_acq_eih::retrieve_reading(): %s\n", "error while retrieving recording from DISCode");
 	}
 }
 

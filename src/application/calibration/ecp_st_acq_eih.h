@@ -12,13 +12,19 @@
 #include "base/lib/impconst.h"
 #include "base/lib/com_buf.h"
 
+#include "base/lib/logger.h"
+#include "base/lib/exception.h"
+#include "base/lib/logger_client/logger_client.h"
+
+#include "generator/ecp/get_position/ecp_g_get_position.h"
+
 #include <boost/shared_ptr.hpp>
 #include "sensor/discode/discode_sensor.h"
 #include "EIHReading.h"
 
 #include "robot/irp6ot_m/ecp_r_irp6ot_m.h"
 #include "robot/irp6p_m/ecp_r_irp6p_m.h"
-#include "base/ecp/ecp_subtask.h"
+#include "base/ecp/ecp_sub_task.h"
 #include "generator/ecp/newsmooth/ecp_g_newsmooth.h"
 #include "generator/ecp/transparent/ecp_g_transparent.h"
 
@@ -34,7 +40,7 @@
 namespace mrrocpp {
 namespace ecp {
 namespace common {
-namespace subtask {
+namespace sub_task {
 
 using namespace mrrocpp::ecp_mp::sensor::discode;
 
@@ -73,6 +79,11 @@ protected:
 	generator::newsmooth* smoothgen;
 	// generator do wysylania danych do fradii
 	generator::eihgenerator* generator;
+
+	ecp::common::generator::get_position* get_position;
+
+	std::vector <double> position_vector;
+
 	bool store_data(void);
 	void main_task_algorithm(void);
 

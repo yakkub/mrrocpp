@@ -3,14 +3,14 @@
 
 #include "base/lib/impconst.h"
 #include "base/lib/com_buf.h"
-#include "base/ecp/ecp_subtask.h"
+#include "base/ecp/ecp_sub_task.h"
 
 namespace mrrocpp {
 namespace ecp {
 namespace common {
-namespace subtask {
+namespace sub_task {
 
-class acquisition : public subtask
+class acquisition : public sub_task
 {
 public:
 	// KONSTRUKTORY

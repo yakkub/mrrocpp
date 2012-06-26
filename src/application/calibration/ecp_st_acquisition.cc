@@ -6,11 +6,11 @@
 namespace mrrocpp {
 namespace ecp {
 namespace common {
-namespace subtask {
+namespace sub_task {
 
 // KONSTRUKTORY
 acquisition::acquisition(task::task &_ecp_t) :
-	subtask(_ecp_t)
+	sub_task(_ecp_t)
 {
 }
 
