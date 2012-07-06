@@ -124,6 +124,7 @@ void manip_effector::set_robot_model_with_sb(const lib::c_buffer &instruction)
 		default: // blad: nie istniejca specyfikacja modelu robota
 			// ustawi numer bledu
 			manip_effector::set_robot_model(instruction);
+			break;
 	}
 }
 /*--------------------------------------------------------------------------*/
@@ -572,6 +573,7 @@ void manip_effector::set_robot_model(const lib::c_buffer &instruction)
 			break;
 		default: // blad: nie istniejaca specyfikacja modelu robota
 			motor_driven_effector::set_robot_model(instruction);
+			break;
 	}
 }
 /*--------------------------------------------------------------------------*/
@@ -607,6 +609,7 @@ void manip_effector::get_robot_model(lib::c_buffer &instruction)
 			break;
 		default: // blad: nie istniejaca specyfikacja modelu robota
 			motor_driven_effector::get_robot_model(instruction);
+			break;
 	}
 }
 /*--------------------------------------------------------------------------*/
@@ -641,7 +644,7 @@ void manip_effector::compute_frame(const lib::c_buffer &instruction)
 			break;
 		default: {
 			BOOST_THROW_EXCEPTION(nfe_2() << mrrocpp_error0(INVALID_MOTION_TYPE));
-
+			break;
 		}
 	}
 	// Przeliczenie wspolrzednych zewnetrznych na wspolrzedne wewnetrzne
@@ -716,6 +719,7 @@ void manip_effector::single_thread_move_arm(const lib::c_buffer &instruction)
 			break;
 		default: // blad: niezdefiniowany sposb specyfikacji pozycji koncowki
 			motor_driven_effector::single_thread_move_arm(instruction);
+			break;
 	}
 
 }
@@ -740,6 +744,7 @@ void manip_effector::multi_thread_move_arm(const lib::c_buffer &instruction)
 					break;
 				default: // blad: niezdefiniowany sposb specyfikacji pozycji koncowki
 					motor_driven_effector::multi_thread_move_arm(instruction);
+					break;
 			}
 			break;
 		case lib::TCIM:
