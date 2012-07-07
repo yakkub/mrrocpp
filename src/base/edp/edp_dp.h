@@ -19,41 +19,20 @@ template <class T>
 class edp_dp
 {
 protected:
-	/**
-	 * @brief no data flag
-	 * it is set if no data is stored (before first set method call)
-	 */
-	bool no_data;
 
 	boost::mutex boost_mutex; // mutex do sily   XXXXXX
 
-//	T _data;
-
-public:
 	/**
 	 * @brief data stored basing on template
 	 */
 	T data;
 
-	/*
-	 T & data() {
-	 set();
-	 return _data;
-	 }
-
-	 const T & data() const
-	 {
-	 return _data;
-	 }
-	 */
+public:
 
 	/**
 	 * @brief Constructor
-	 * @param _name Unique port name.
-	 * @param _port_manager port manager reference.
 	 */
-	edp_dp() :
-			no_data(true)
+	edp_dp()
 	{
 	}
 

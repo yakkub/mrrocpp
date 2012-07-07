@@ -1,9 +1,4 @@
 /*!
- * \file edp_e_manip.h
- * \brief File containing the declaration of edp::common::motor_driven_effector class.
- *
- * \author yoyek
- * \date 2009
  *
  */
 

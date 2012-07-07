@@ -1,14 +1,3 @@
-// ------------------------------------------------------------------------
-// Proces:		EDP
-// Plik:			edp_irp6s.cc
-// System:	QNX/MRROC++  v. 6.3
-// Opis:		Metody wspolne dla robotow IRp-6
-// 				- definicja metod klasy edp_irp6s_effector
-//
-// Autor:		tkornuta
-// Data:		14.02.2007
-// -------------------------------------------------------------------------
-
 #include <cstdio>
 #include <cctype>
 #include <cstdlib>
