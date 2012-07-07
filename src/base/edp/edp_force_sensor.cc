@@ -17,7 +17,7 @@ void force::operator()()
 {
 	//	sr_msg->message("operator");
 
-	if(!master.robot_test_mode) {
+	if (!master.robot_test_mode) {
 		lib::set_thread_priority(lib::PTHREAD_MAX_PRIORITY - 1);
 	}
 
@@ -67,8 +67,7 @@ void force::operator()()
 		perror("clock_gettime()");
 	}
 
-	while (!boost::this_thread::interruption_requested())
-	{
+	while (!boost::this_thread::interruption_requested()) {
 		try {
 			if (new_edp_command) {
 				boost::mutex::scoped_lock lock(mtx);
@@ -101,7 +100,7 @@ void force::operator()()
 				lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
 
 				// uwaga sila nie przemnozona przez tool'a i current frame orientation
-				master.force_msr_download(current_force);
+				master.force_dp.read(current_force);
 
 				lib::Ft_vector current_force_torque(ft_tr_inv_tool_matrix * ft_tr_inv_current_frame_matrix
 						* current_force);
@@ -150,8 +149,14 @@ void force::operator()()
 } //!< end MAIN
 
 force::force(common::manip_effector &_master) :
-		force_sensor_test_mode(true), is_reading_ready(false), //!< nie ma zadnego gotowego odczytu
-		is_right_turn_frame(true), gravity_transformation(NULL), master(_master), is_sensor_configured(false), new_edp_command(false), cb(FORCE_BUFFER_LENGHT) //!< czujnik niezainicjowany
+		force_sensor_test_mode(true),
+		is_reading_ready(false), //!< nie ma zadnego gotowego odczytu
+		is_right_turn_frame(true),
+		gravity_transformation(NULL),
+		master(_master),
+		is_sensor_configured(false),
+		new_edp_command(false),
+		cb(FORCE_BUFFER_LENGHT) //!< czujnik niezainicjowany
 {
 	/*! Lokalizacja procesu wywietlania komunikatow SR */
 
@@ -273,7 +278,7 @@ void force::get_reading(void)
 
 				lib::Ft_vector output = output_in_base;
 
-				master.force_msr_upload(output);
+				master.force_dp.write(output);
 			} else {
 				std::stringstream buffer(std::stringstream::in | std::stringstream::out);
 				buffer << "over_force detected step: " << master.step_counter << " ";
@@ -286,7 +291,7 @@ void force::get_reading(void)
 		}
 
 	} else {
-		master.force_msr_upload(ft_table);
+		master.force_dp.write(ft_table);
 	}
 
 }

@@ -9,9 +9,7 @@
 #ifndef __EDP_DP_H
 #define __EDP_DP_H
 
-#include <boost/utility.hpp>
-
-
+#include <boost/thread/mutex.hpp>
 
 namespace mrrocpp {
 namespace edp {
@@ -26,6 +24,8 @@ protected:
 	 * it is set if no data is stored (before first set method call)
 	 */
 	bool no_data;
+
+	boost::mutex boost_mutex; // mutex do sily   XXXXXX
 
 //	T _data;
 
@@ -53,10 +53,21 @@ public:
 	 * @param _port_manager port manager reference.
 	 */
 	edp_dp() :
-	no_data(true)
+			no_data(true)
 	{
 	}
 
+	void write(const T &input)
+	{
+		boost::mutex::scoped_lock lock(boost_mutex);
+		data = input;
+	}
+
+	void read(T &output)
+	{
+		boost::mutex::scoped_lock lock(boost_mutex);
+		output = data;
+	}
 
 };
 

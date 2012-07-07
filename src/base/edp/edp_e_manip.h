@@ -60,19 +60,6 @@ protected:
 	 */
 	lib::Homog_matrix current_end_effector_frame;
 
-	/*!
-	 * \brief current global force measurement.
-	 *
-	 * It is set by the force thread.
-	 */
-	lib::Ft_vector global_force_msr;
-
-	/*!
-	 * \brief mutex for force global_force_msr
-	 *
-	 * This measueremnt is set by the force thread and get by the transformation thread.
-	 */
-	boost::mutex force_mutex; // mutex do sily   XXXXXX
 
 	/*!
 	 * \brief move arm method for the FRAME command in the single thread variant.
@@ -123,7 +110,7 @@ public:
 	 * For the purpose of the position-force control. It is called once from the pose_force_torque_at_frame_move.
 	 */
 	void
-			compute_base_pos_xyz_rot_xyz_vector(const lib::JointArray & begining_joints, const lib::Homog_matrix & begining_end_effector_frame, const lib::c_buffer & instruction, lib::Xyz_Angle_Axis_vector & base_pos_xyz_rot_xyz_vector);
+	compute_base_pos_xyz_rot_xyz_vector(const lib::JointArray & begining_joints, const lib::Homog_matrix & begining_end_effector_frame, const lib::c_buffer & instruction, lib::Xyz_Angle_Axis_vector & base_pos_xyz_rot_xyz_vector);
 
 	/*!
 	 * \brief Iteration (interpolation) of the position-force control motion.
@@ -131,7 +118,7 @@ public:
 	 * It bases on the pose_force_torque_at_frame_move and other ECP command arguments.
 	 */
 	virtual void
-			iterate_macrostep(const lib::JointArray & begining_joints, const lib::Homog_matrix & begining_end_effector_frame, const lib::c_buffer & instruction, const lib::Xyz_Angle_Axis_vector & base_pos_xyz_rot_xyz_vector);
+	iterate_macrostep(const lib::JointArray & begining_joints, const lib::Homog_matrix & begining_end_effector_frame, const lib::c_buffer & instruction, const lib::Xyz_Angle_Axis_vector & base_pos_xyz_rot_xyz_vector);
 
 	/*!
 	 * \brief pose-force command execution
@@ -141,19 +128,8 @@ public:
 	 */
 	void pose_force_torque_at_frame_move(const lib::c_buffer &instruction);
 
-	/*!
-	 * \brief method to set global_force_msr with mutex protection.
-	 *
-	 * It is called in the force sensor thread.
-	 */
-	void force_msr_upload(const lib::Ft_vector & l_vector);
+	edp_dp <lib::Ft_vector> force_dp;
 
-	/*!
-	 * \brief method to get global_force_msr with mutex protection.
-	 *
-	 * It is called in the transformation thread.
-	 */
-	void force_msr_download(lib::Ft_vector & l_vector);
 
 	/*!
 	 * \brief method that computes servo_current_frame_wo_tool

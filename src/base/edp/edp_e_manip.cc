@@ -175,7 +175,8 @@ void manip_effector::get_arm_position_with_force_and_sb(bool read_hardware, lib:
 	lib::Ft_tr ft_tr_inv_tool_matrix(!current_tool);
 
 	lib::Ft_vector current_force;
-	force_msr_download(current_force);
+
+	force_dp.read(current_force);
 
 	// sprowadzenie sil z ukladu bazowego do ukladu kisci
 	// modyfikacja pobranych sil w ukladzie czujnika - do ukladu wyznaczonego przez force_tool_frame i reference_frame
@@ -369,7 +370,8 @@ void manip_effector::iterate_macrostep(const lib::JointArray & begining_joints, 
 		lib::V_tr v_tr_current_frame_matrix(current_frame_wo_offset);
 
 		lib::Ft_vector current_force;
-		force_msr_download(current_force);
+
+		force_dp.read(current_force);
 		// sprowadzenie sil z ukladu bazowego do ukladu kisci
 		// modyfikacja pobranych sil w ukladzie czujnika - do ukladu wyznaczonego przez force_tool_frame i reference_frame
 
@@ -672,19 +674,6 @@ lib::Homog_matrix manip_effector::return_current_frame(TRANSLATION_ENUM translat
 	if (translation_mode == WITHOUT_TRANSLATION)
 		return_frame.remove_translation();
 	return return_frame;
-}
-
-void manip_effector::force_msr_upload(const lib::Ft_vector & l_vector)
-{ // by Y wgranie globalnego zestawu danych
-	boost::mutex::scoped_lock lock(force_mutex);
-	global_force_msr = l_vector;
-}
-
-// by Y odczytanie globalnego zestawu danych
-void manip_effector::force_msr_download(lib::Ft_vector & l_vector)
-{
-	boost::mutex::scoped_lock lock(force_mutex);
-	l_vector = global_force_msr;
 }
 
 /*--------------------------------------------------------------------------*/
